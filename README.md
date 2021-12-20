@@ -1,2 +1,0 @@
-# generic-queue-c
-
