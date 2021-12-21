@@ -4,7 +4,7 @@
 
 typedef struct Queue_s Queue_t;
 
-typedef void * gpointer;
+typedef void* gpointer;
 typedef void ( *ptr_function_display ) ( gpointer data );
 typedef void ( *ptr_function_free ) ( gpointer data );
 void Queue_display(const Queue_t *f);

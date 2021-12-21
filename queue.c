@@ -63,22 +63,6 @@ void Queue_insert(Queue_t *f, gpointer v)
     f->first = c;
     f->length++;
     Queue_display(f);
-    /*
-
-      struct Element_s *e = malloc(sizeof(struct Element_s));
-  e->valeur = v;
-  e->pred = NULL;    // 1
-  e->succ = f->first; // 2
-  if (f->first != NULL)
-  {
-    assert(f->first->pred == NULL);
-    f->first->pred = e; // 3
-  }
-  else
-    f->queue = e; // 1 seul element
-  f->first = e;    // 4
-  f->length++;    // 5
-  File_afficher(f);*/
 }
 
 void Queue_display(const Queue_t *f)
@@ -90,7 +74,7 @@ void Queue_display(const Queue_t *f)
         f->display(current->value);
         current = current->next;
     }
-    printf("->NULL\n");
+    printf("NULL\n");
 }
 
 gpointer Queue_remove(Queue_t *f)
@@ -100,7 +84,7 @@ gpointer Queue_remove(Queue_t *f)
 
     gpointer v = f->queue->value;
 
-    if (f->queue == f->first)
+    if (f->queue->prev == NULL)
     {
         assert(f->length == 1);
         free(f->queue);
@@ -108,10 +92,9 @@ gpointer Queue_remove(Queue_t *f)
     }
     else
     {
-        f->queue->prev->next = NULL;
-        struct Cell_s *c = f->queue;
         f->queue = f->queue->prev;
-        free(c);
+        free(f->queue->next);
+        f->queue->next = NULL;
     }
 
     f->length--;
