@@ -76,7 +76,6 @@ struct Cell_s *List_get_element(List_t *f, gpointer v)
 void List_insert_head(List_t *f, gpointer v)
 {
     assert(f != NULL);
-    assert(f->length > 0);
     struct Cell_s *c = Cell_create();
     c->value = v;
     c->next = f->head;
@@ -92,7 +91,6 @@ void List_insert_head(List_t *f, gpointer v)
 
     f->head = c;
     f->length++;
-    List_display(f);
 }
 
 void List_insert_position(List_t *f, gpointer v, struct Cell_s *previous)
@@ -115,13 +113,12 @@ void List_insert_position(List_t *f, gpointer v, struct Cell_s *previous)
 
     previous->next = c;
     f->length++;
-    List_display(f);
 }
 
 void List_insert(List_t *f, gpointer v)
 {
     assert(f != NULL);
-    struct Element_s *c = List_get_element(f, v);
+    struct Cell_s *c = List_get_element(f, v);
     if (c == NULL)
     {
         List_insert_head(f, v);
@@ -187,10 +184,6 @@ unsigned int List_length(const List_t *f)
 bool List_empty(const List_t *f)
 {
     assert(f != NULL);
-    if (f->length == 0)
-    {
-        assert(f->queue == f->head == NULL);
-    }
     return List_length(f) == 0;
 }
 
