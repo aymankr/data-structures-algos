@@ -3,4 +3,4 @@ main.o
 queue.o
 list.o
 gtest_queue.o
-/googletest
+googletest
