@@ -12,7 +12,7 @@ struct Cell_s
 
 struct Queue_s
 {
-    struct Cell_s *first;
+    struct Cell_s *head;
     struct Cell_s *queue;
     unsigned int length;
     ptr_function_display display;
@@ -23,7 +23,7 @@ Queue_t *Queue_create(ptr_function_display display, ptr_function_free free)
 {
     Queue_t *f = malloc(sizeof(struct Queue_s));
     f->queue = NULL;
-    f->first = NULL;
+    f->head = NULL;
     f->length = 0;
     f->display = display;
     f->free = free;
@@ -49,18 +49,18 @@ void Queue_insert(Queue_t *f, gpointer v)
     assert(f != NULL);
     struct Cell_s *c = Cell_create();
     c->value = v;
-    c->next = f->first;
+    c->next = f->head;
 
-    if (f->first != NULL)
+    if (f->head != NULL)
     {
-        assert(f->first->prev == NULL);
-        f->first->prev = c;
+        assert(f->head->prev == NULL);
+        f->head->prev = c;
     }
     else
     {
         f->queue = c;
     }
-    f->first = c;
+    f->head = c;
     f->length++;
     Queue_display(f);
 }
@@ -68,7 +68,7 @@ void Queue_insert(Queue_t *f, gpointer v)
 void Queue_display(const Queue_t *f)
 {
     assert(f != NULL);
-    struct Cell_s *current = f->first;
+    struct Cell_s *current = f->head;
     while (current != NULL)
     {
         f->display(current->value);
@@ -88,7 +88,7 @@ gpointer Queue_remove(Queue_t *f)
     {
         assert(f->length == 1);
         free(f->queue);
-        f->first = f->queue = NULL;
+        f->head = f->queue = NULL;
     }
     else
     {
@@ -96,7 +96,6 @@ gpointer Queue_remove(Queue_t *f)
         free(f->queue->next);
         f->queue->next = NULL;
     }
-
     f->length--;
     return v;
 }
@@ -113,9 +112,9 @@ bool Queue_empty(const Queue_t *f)
     if (f->length == 0)
     {
         assert(f->queue == NULL);
-        assert(f->first == NULL);
+        assert(f->head == NULL);
     }
-    return (f->length != 0) ? false : true;
+    return f->length == 0;
 }
 
 void Queue_free(Queue_t *f)

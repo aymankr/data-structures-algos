@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "queue.h"
+#include "list.h"
 #include "assert.h"
 
 void function_free_int(void *ptr_value)
