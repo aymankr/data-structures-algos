@@ -37,6 +37,19 @@ TEST(FileTest, init_free)
     List_free(f);
 }
 
+TEST(FileTest, push)
+{
+    List_s *f = List_create(function_display_personne, function_free_personne, 0);
+    for (int i = 0 ; i < 5;i++) {
+        struct Personne* p =create_personne("name", "fname", 2000+i, 2000%30, 2000%12);
+        List_insert(f, p);
+    }
+
+    struct Personne* unknown = create_personne("unknown", "name", 2012, 30, 3);
+}
+
+    
+
 int main(int argc, char **argv)
 {
     /* run google tests */

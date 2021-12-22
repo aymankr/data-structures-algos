@@ -51,7 +51,7 @@ int ajouter_personnes(struct Annuaire *ptr_annuaire, const struct Personne *ptr_
     return 0;
 }
 
-//bug de strdup, utilisation du code source dans la fonction copy_strdup...
+// bug de strdup, utilisation du code source dans la fonction copy_strdup...
 char *copy_strdup(const char *s)
 {
     size_t len = strlen(s) + 1;
@@ -61,19 +61,32 @@ char *copy_strdup(const char *s)
     return (char *)memcpy(new, s, len);
 }
 
-void free_personne(struct Personne* p)
+void free_personne(struct Personne *p)
 {
     free(p->nom);
     free(p->prenom);
+    p->nom = NULL;
+    p->prenom = NULL;
     free(p);
     p = NULL;
 }
 
-void display_personne(const struct Personne* p)
+void display_personne(const struct Personne *p)
 {
     printf("Nom : %s\n", (*p).nom);
     printf("Prenom : %s\n", p->prenom);
     printf("Date naissance : %d/%d/%d\n", p->naissance.jour,
            p->naissance.mois,
            p->naissance.annee);
+}
+
+struct Personne *create_personne(const char *name, const char *fname, int year, int month, int day)
+{
+    struct Personne *p = (struct Personne *)malloc(sizeof(struct Personne));
+    p->naissance.annee = year;
+    p->naissance.jour = month;
+    p->naissance.mois = day;
+    p->nom = strdup(name);
+    p->prenom = strdup(fname);
+    return p;
 }
