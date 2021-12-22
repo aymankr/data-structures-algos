@@ -18,7 +18,6 @@ void detruire_annuaire(struct Annuaire *ptr_annuaire)
 {
     for (int i = 0; i < ptr_annuaire->taille; i++)
     {
-        struct Personne p = ptr_annuaire->tableau[i];
         free(ptr_annuaire->tableau[i].nom);
         free(ptr_annuaire->tableau[i].prenom);
         ptr_annuaire->tableau[i].nom = NULL;
@@ -62,7 +61,7 @@ char *copy_strdup(const char *s)
     return (char *)memcpy(new, s, len);
 }
 
-void free_personne(struct Personne *p)
+void free_personne(struct Personne* p)
 {
     free(p->nom);
     free(p->prenom);
@@ -70,7 +69,7 @@ void free_personne(struct Personne *p)
     p = NULL;
 }
 
-void display_personne(const struct Personne *p)
+void display_personne(const struct Personne* p)
 {
     printf("Nom : %s\n", (*p).nom);
     printf("Prenom : %s\n", p->prenom);

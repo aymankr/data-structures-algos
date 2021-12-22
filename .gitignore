@@ -3,4 +3,8 @@ main.o
 queue.o
 list.o
 gtest_queue.o
+gtest_list.o
+gtest_queue
+gtest_list
+personne.o
 googletest

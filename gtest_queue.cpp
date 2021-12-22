@@ -14,12 +14,12 @@ extern "C"
 
 void function_free_personne(gpointer v)
 {
-    free_personne((struct Personne *)v);
+    free_personne((struct Personne *) v);
 }
 
 void function_display_personne(gpointer v)
 {
-    display_personne((const struct Personne *)v);
+    display_personne((const struct Personne *) v);
 }
 
 /* ********** TEST INIT & FREE ********** */
@@ -31,3 +31,9 @@ TEST(FileTest, init_free)
     Queue_free(f);
 }
 
+int main(int argc, char **argv)
+{
+    /* run google tests */
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
