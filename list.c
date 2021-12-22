@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "list.h"
 #include <assert.h>
+#include "personne.h"
 
 struct Cell_s
 {
@@ -146,7 +147,6 @@ void List_display(const List_t *f)
 gpointer List_remove(List_t *f, gpointer v)
 {
     assert(f != NULL);
-    assert(f->length > 0);
     struct Cell_s *c = List_get_element(f, v);
 
     if (c == NULL)
@@ -170,6 +170,11 @@ gpointer List_remove(List_t *f, gpointer v)
         f->queue = c->prev;
     }
     gpointer removed = c->value;
+    struct Personne *p = (struct Personne *)v;
+    struct Personne *r= (struct Personne*)removed;
+    printf("%d\n",p->naissance.annee);
+    printf("%d\n",r->naissance.annee);
+    assert(f->compare(v, removed) == 0);
     free(c);
     f->length--;
 

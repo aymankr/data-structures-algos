@@ -22,14 +22,14 @@ void function_display_personne(gpointer v)
     display_personne((const struct Personne *)v);
 }
 
-TEST(FileTest, init_free)
+TEST(QueueTest, init_free)
 {
     Queue_s *f = Queue_create(function_display_personne, function_free_personne);
     EXPECT_FALSE(f == NULL);
     Queue_free(f);
 }
 
-TEST(FileTest, push)
+TEST(QueueTest, push)
 {
     Queue_s *f = Queue_create(function_display_personne, function_free_personne);
     for (int i = 0; i < 5; i++)
@@ -53,7 +53,7 @@ TEST(FileTest, push)
     Queue_free(f);
 }
 
-TEST(FileTest, pop)
+TEST(QueueTest, pop)
 {
     Queue_s *f = Queue_create(function_display_personne, function_free_personne);
     for (int i = 0; i < 5; i++)
@@ -70,7 +70,7 @@ TEST(FileTest, pop)
     Queue_free(f);
 }
 
-TEST(FileTest, drop)
+TEST(QueueTest, drop)
 {
     Queue_s *f = Queue_create(function_display_personne, function_free_personne);
     for (int i = 0; i < 5; i++)
@@ -90,7 +90,7 @@ TEST(FileTest, drop)
     Queue_free(f);
 }
 
-TEST(FileTest, empty)
+TEST(QueueTest, empty)
 {
     Queue_s *f = Queue_create(function_display_personne, function_free_personne);
     EXPECT_TRUE(Queue_empty(f));
@@ -105,7 +105,7 @@ TEST(FileTest, empty)
     Queue_free(f);
 }
 
-TEST(FileTest, length)
+TEST(QueueTest, length)
 {
     Queue_s *f = Queue_create(function_display_personne, function_free_personne);
     EXPECT_TRUE(Queue_length(f) == 0);
