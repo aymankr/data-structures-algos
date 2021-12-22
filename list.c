@@ -7,14 +7,12 @@
 struct Cell_s
 {
     gpointer value;
-    struct Cell_s *prev;
-    struct Cell_s *next;
+    struct Cell_s *prev, *next;
 };
 
 struct List_s
 {
-    struct Cell_s *head;
-    struct Cell_s *queue;
+    struct Cell_s *head, *queue;
     unsigned int length;
     ptr_function_display display;
     ptr_function_free free;
@@ -24,8 +22,7 @@ struct List_s
 List_t *List_create(ptr_function_display display, ptr_function_free free, ptr_function_compare compare)
 {
     List_t *f = malloc(sizeof(struct List_s));
-    f->queue = NULL;
-    f->head = NULL;
+    f->queue = f->head = NULL;
     f->length = 0;
     f->display = display;
     f->free = free;
@@ -33,52 +30,48 @@ List_t *List_create(ptr_function_display display, ptr_function_free free, ptr_fu
     return f;
 }
 
-struct Cell_s *Cell_create()
+struct Cell_s *Cell_create(gpointer v)
 {
     struct Cell_s *Cell = malloc(sizeof(struct Cell_s));
-    Cell->prev = NULL;
-    Cell->next = NULL;
-    Cell->value = NULL;
+    Cell->prev = Cell->next = NULL;
+    Cell->value = v;
     return Cell;
 }
 
 struct Cell_s *List_get_position(List_t *f, gpointer v)
 {
-    assert(f != NULL);
-    struct Cell_s *c = f->head;
-
-    while (c != NULL)
+    if (!List_empty(f))
     {
-        if (f->compare(c->value, v) > 0)
+        struct Cell_s *c = f->head;
+        while (c != NULL)
         {
-            return c->prev;
+            if (f->compare(c->value, v) > 0)
+                return c->prev;
+            c = c->next;
         }
-        c = c->next;
+        return f->queue;
     }
-    return f->queue;
+    return NULL;
 }
 
 struct Cell_s *List_get_element(List_t *f, gpointer v)
 {
-    assert(f != NULL);
-    struct Cell_s *c = f->head;
-
-    while (c != NULL)
+    if (!List_empty(f))
     {
-        if (f->compare(c->value, v) == 0)
+        struct Cell_s *c = f->head;
+        while (c != NULL)
         {
-            return c->prev;
+            if (f->compare(c->value, v) == 0)
+                return c;
+            c = c->next;
         }
-        c = c->next;
     }
     return NULL;
 }
 
 void List_insert_head(List_t *f, gpointer v)
 {
-    assert(f != NULL);
-    struct Cell_s *c = Cell_create();
-    c->value = v;
+    struct Cell_s *c = Cell_create(v);
     c->next = f->head;
 
     if (f->head != NULL)
@@ -96,10 +89,8 @@ void List_insert_head(List_t *f, gpointer v)
 
 void List_insert_position(List_t *f, gpointer v, struct Cell_s *previous)
 {
-    assert(f != NULL);
 
-    struct Cell_s *c = Cell_create();
-    c->value = v;
+    struct Cell_s *c = Cell_create(v);
     c->prev = previous;
     c->next = previous->next;
 
@@ -118,7 +109,6 @@ void List_insert_position(List_t *f, gpointer v, struct Cell_s *previous)
 
 void List_insert(List_t *f, gpointer v)
 {
-    assert(f != NULL);
     struct Cell_s *c = List_get_element(f, v);
     if (c == NULL)
     {
@@ -133,8 +123,6 @@ void List_insert(List_t *f, gpointer v)
 
 void List_display(const List_t *f)
 {
-    assert(f != NULL);
-    assert(f->length > 0);
     struct Cell_s *c = f->head;
     while (c != NULL)
     {
@@ -146,7 +134,6 @@ void List_display(const List_t *f)
 
 gpointer List_remove(List_t *f, gpointer v)
 {
-    assert(f != NULL);
     struct Cell_s *c = List_get_element(f, v);
 
     if (c == NULL)
@@ -170,11 +157,6 @@ gpointer List_remove(List_t *f, gpointer v)
         f->queue = c->prev;
     }
     gpointer removed = c->value;
-    struct Personne *p = (struct Personne *)v;
-    struct Personne *r= (struct Personne*)removed;
-    printf("%d\n",p->naissance.annee);
-    printf("%d\n",r->naissance.annee);
-    assert(f->compare(v, removed) == 0);
     free(c);
     f->length--;
 
@@ -188,13 +170,11 @@ unsigned int List_length(const List_t *f)
 
 bool List_empty(const List_t *f)
 {
-    assert(f != NULL);
     return List_length(f) == 0;
 }
 
 void List_free(List_t *f)
 {
-    assert(f != NULL);
     struct Cell_s *c = f->head;
     while (c != NULL)
     {

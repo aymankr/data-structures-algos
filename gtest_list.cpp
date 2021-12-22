@@ -57,6 +57,7 @@ TEST(ListTest, push)
     struct Personne *rem = (struct Personne *)List_remove(f, p);
     EXPECT_TRUE(p != NULL);
 
+    function_free_personne(rem);
     List_free(f);
 }
 
@@ -68,14 +69,16 @@ TEST(ListTest, pop)
 
     EXPECT_TRUE(List_length(f) == 1);
 
-    struct Personne *p2 = create_personne("name", "fzzzzz", 2200, 1, 10);
+    struct Personne *p2 = create_personne("namae", "fzzzzz", 2200, 3, 11);
     struct Personne *rem = (struct Personne *)List_remove(f, p2);
     EXPECT_TRUE(rem == NULL);
-    EXPECT_TRUE(!List_empty(f));
 
     struct Personne *rem2 = (struct Personne *)List_remove(f, p);
     EXPECT_TRUE(rem2 != NULL);
     EXPECT_TRUE(List_empty(f));
+
+    function_free_personne(p2);
+    function_free_personne(rem2);
 
     List_free(f);
 }
@@ -96,6 +99,7 @@ TEST(ListTest, drop)
         struct Personne *tmp = (struct Personne *)List_remove(f, p);
         ASSERT_STREQ(tmp->nom, "name");
         function_free_personne(p);
+        function_free_personne(tmp);
     }
     List_free(f);
 }
@@ -114,6 +118,7 @@ TEST(ListTest, empty)
     {
         struct Personne *p2 = create_personne("name", "fname", 2000 + i, i, i);
         struct Personne *tmp = (struct Personne *)List_remove(f, p2);
+        function_free_personne(tmp);
         function_free_personne(p2);
     }
 
@@ -136,6 +141,7 @@ TEST(ListTest, length)
     {
         struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
         struct Personne *tmp = (struct Personne *)List_remove(f, p);
+        function_free_personne(tmp);
         function_free_personne(p);
     }
 
