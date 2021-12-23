@@ -22,6 +22,13 @@ void function_display_personne(gpointer v)
     display_personne((const struct Personne *)v);
 }
 
+/**
+ * @brief Compare two "personne"'s birth year
+ *
+ * @param v1 personne 1
+ * @param v2 personne 2
+ * @return int
+ */
 int function_compare_personne(gpointer v1, gpointer v2)
 {
     struct Personne *p1 = (struct Personne *)v1;
@@ -51,11 +58,16 @@ TEST(ListTest, init_free)
 TEST(ListTest, push)
 {
     List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
+
+    // push
     struct Personne *p = create_personne("name", "fname", 2000, 1, 10);
     List_insert(f, p);
+    EXPECT_TRUE(!List_empty(f));
 
+    // verify if the element was pushed
     struct Personne *rem = (struct Personne *)List_remove(f, p);
     EXPECT_TRUE(p != NULL);
+    EXPECT_TRUE(List_empty(f));
 
     function_free_personne(rem);
     List_free(f);
@@ -64,17 +76,24 @@ TEST(ListTest, push)
 TEST(ListTest, pop)
 {
     List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
+
+    // push
     struct Personne *p = create_personne("name", "fname", 2000, 1, 10);
     List_insert(f, p);
 
+    // not empty
     EXPECT_TRUE(List_length(f) == 1);
 
+    // pop an unknown element
     struct Personne *p2 = create_personne("namae", "fzzzzz", 2200, 3, 11);
     struct Personne *rem = (struct Personne *)List_remove(f, p2);
     EXPECT_TRUE(rem == NULL);
 
+    // pop an existing element
     struct Personne *rem2 = (struct Personne *)List_remove(f, p);
     EXPECT_TRUE(rem2 != NULL);
+
+    // empty
     EXPECT_TRUE(List_empty(f));
 
     function_free_personne(p2);
@@ -86,6 +105,8 @@ TEST(ListTest, pop)
 TEST(ListTest, drop)
 {
     List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
+
+    // push
     for (int i = 0; i < 5; i++)
     {
         struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
@@ -123,8 +144,7 @@ TEST(ListTest, empty)
         struct Personne *p1 = create_personne("name", "fname", 2000 + i, i, i);
         List_insert(f, p1);
     }
-    EXPECT_TRUE(!List_empty(f));
-
+    EXPECT_TRUE(!List_empty(f)); // not empty
     for (int i = 0; i < 5; i++)
     {
         struct Personne *p2 = create_personne("name", "fname", 2000 + i, i, i);
@@ -133,21 +153,23 @@ TEST(ListTest, empty)
         function_free_personne(p2);
     }
 
-    EXPECT_TRUE(List_empty(f));
+    EXPECT_TRUE(List_empty(f)); // empty
     List_free(f);
 }
 
 TEST(ListTest, length)
 {
     List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
-    EXPECT_TRUE(List_length(f) == 0);
-    for (int i = 0; i < 5; i++)
+    EXPECT_TRUE(List_length(f) == 0); // empty
+
+    for (int i = 0; i < 5; i++) // push 5 times
     {
         struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
         List_insert(f, p);
     }
-    EXPECT_TRUE(List_length(f) == 5);
+    EXPECT_TRUE(List_length(f) == 5); // length of 5
 
+    // pop 5 times
     for (int i = 0; i < 5; i++)
     {
         struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
@@ -156,7 +178,7 @@ TEST(ListTest, length)
         function_free_personne(p);
     }
 
-    EXPECT_TRUE(List_length(f) == 0);
+    EXPECT_TRUE(List_length(f) == 0); // empty
     List_free(f);
 }
 

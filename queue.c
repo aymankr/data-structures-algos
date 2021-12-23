@@ -17,6 +17,13 @@ struct Queue_s
     ptr_function_free free;
 };
 
+/**
+ * @brief Construct a queue
+ * 
+ * @param display function display
+ * @param free function free
+ * @return Queue_t* 
+ */
 Queue_t *Queue_create(ptr_function_display display, ptr_function_free free)
 {
     Queue_t *f = malloc(sizeof(struct Queue_s));
@@ -27,6 +34,12 @@ Queue_t *Queue_create(ptr_function_display display, ptr_function_free free)
     return f;
 }
 
+/**
+ * @brief Construct a cell
+ * 
+ * @param v value
+ * @return struct Cell_s* 
+ */
 struct Cell_s *Cell_create(gpointer v)
 {
     struct Cell_s *Cell = malloc(sizeof(struct Cell_s));
@@ -35,6 +48,14 @@ struct Cell_s *Cell_create(gpointer v)
     return Cell;
 }
 
+/**
+ * @brief Insert a cell in the queue
+ * if the queue is not empty, insert before the head
+ * else insert the first element in the head 
+ * 
+ * @param f queue
+ * @param v value
+ */
 void Queue_insert(Queue_t *f, gpointer v)
 {
     struct Cell_s *c = Cell_create(v);
@@ -53,6 +74,11 @@ void Queue_insert(Queue_t *f, gpointer v)
     Queue_display(f);
 }
 
+/**
+ * @brief Display values of a queue
+ * 
+ * @param f queue
+ */
 void Queue_display(const Queue_t *f)
 {
     struct Cell_s *c = f->head;
@@ -64,6 +90,14 @@ void Queue_display(const Queue_t *f)
     printf("NULL\n");
 }
 
+/**
+ * @brief Remove the head cell of the queue if there is at least 1 element
+ * if there is only 1 cell, set the head and the queue at NULL
+ * else remove the head by replacing the cell queue by the previous cell queue
+ * 
+ * @param f queue
+ * @return gpointer 
+ */
 gpointer Queue_remove(Queue_t *f)
 {
     assert(Queue_length(f) > 0);
@@ -84,16 +118,34 @@ gpointer Queue_remove(Queue_t *f)
     return v;
 }
 
+/**
+ * @brief Get length of a queue
+ * 
+ * @param f queue
+ * @return unsigned int 
+ */
 unsigned int Queue_length(const Queue_t *f)
 {
     return f->length;
 }
 
+/**
+ * @brief Verify if a queue is empty
+ * 
+ * @param f queue
+ * @return true 
+ * @return false 
+ */
 bool Queue_empty(const Queue_t *f)
 {
     return f->length == 0;
 }
 
+/**
+ * @brief Free pointer values of the queue, free the queue
+ * 
+ * @param f queue
+ */
 void Queue_free(Queue_t *f)
 {
     while (!Queue_empty(f))
