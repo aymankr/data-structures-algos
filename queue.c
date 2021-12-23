@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "queue.h"
+#include "assert.h"
 
 struct Cell_s
 {
@@ -39,7 +40,7 @@ void Queue_insert(Queue_t *f, gpointer v)
     struct Cell_s *c = Cell_create(v);
     c->next = f->head;
 
-    if (f->head != NULL)
+    if (Queue_length(f) > 0)
     {
         f->head->prev = c;
     }
@@ -54,30 +55,31 @@ void Queue_insert(Queue_t *f, gpointer v)
 
 void Queue_display(const Queue_t *f)
 {
-    struct Cell_s *current = f->head;
-    while (current != NULL)
+    struct Cell_s *c = f->head;
+    while (c != NULL)
     {
-        f->display(current->value);
-        current = current->next;
+        f->display(c->value);
+        c = c->next;
     }
     printf("NULL\n");
 }
 
 gpointer Queue_remove(Queue_t *f)
 {
+    assert(Queue_length(f) > 0);
     gpointer v = f->queue->value;
+    struct Cell_s *tmp = f->queue;
 
-    if (f->queue->prev == NULL)
+    if (Queue_length(f) == 1)
     {
-        free(f->queue);
         f->head = f->queue = NULL;
     }
     else
     {
-        f->queue = f->queue->prev;
-        free(f->queue->next);
-        f->queue->next = NULL;
+        f->queue = tmp->prev;
     }
+    free(tmp);
+    tmp = NULL;
     f->length--;
     return v;
 }
@@ -96,8 +98,8 @@ void Queue_free(Queue_t *f)
 {
     while (!Queue_empty(f))
     {
-        gpointer tmp = Queue_remove(f);
-        f->free(tmp);
+        gpointer v = Queue_remove(f);
+        f->free(v);
     }
     free(f);
     f = NULL;

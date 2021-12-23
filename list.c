@@ -49,7 +49,6 @@ struct Cell_s *List_get_position(List_t *f, gpointer v)
                 return c->prev;
             c = c->next;
         }
-        return f->queue;
     }
     return NULL;
 }
@@ -94,13 +93,13 @@ void List_insert_position(List_t *f, gpointer v, struct Cell_s *previous)
     c->prev = previous;
     c->next = previous->next;
 
-    if (previous->next == NULL)
+    if (List_length(f) == 1)
     {
-        f->queue = c;
+        f->queue = f->head = c;
     }
     else
     {
-        previous->next->prev = c;
+        c->next->prev = c;
     }
 
     previous->next = c;
@@ -136,26 +135,30 @@ gpointer List_remove(List_t *f, gpointer v)
 {
     struct Cell_s *c = List_get_element(f, v);
 
-    if (c == NULL)
+    if (c != NULL)
+    {
+        if (c->prev != NULL)
+        {
+            c->prev->next = c->next;
+        }
+        else
+        {
+            f->head = c->next;
+        }
+        if (c->next != NULL)
+        {
+            c->next->prev = c->prev;
+        }
+        else
+        {
+            f->queue = c->prev;
+        }
+    }
+    else
     {
         return NULL;
     }
-    if (c->prev != NULL)
-    {
-        c->prev->next = c->next;
-    }
-    else
-    {
-        f->head = c->next;
-    }
-    if (c->next != NULL)
-    {
-        c->next->prev = c->prev;
-    }
-    else
-    {
-        f->queue = c->prev;
-    }
+
     gpointer removed = c->value;
     free(c);
     f->length--;
@@ -178,10 +181,8 @@ void List_free(List_t *f)
     struct Cell_s *c = f->head;
     while (c != NULL)
     {
-        f->free(c->value);
-        struct Cell_s *tmp = c->next;
-        free(c);
-        c = tmp;
+        f->free(c);
+        c = c->next;
     }
     free(f);
     f = NULL;

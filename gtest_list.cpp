@@ -44,7 +44,7 @@ int function_compare_personne(gpointer v1, gpointer v2)
 TEST(ListTest, init_free)
 {
     List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
-    EXPECT_FALSE(f == NULL);
+    EXPECT_TRUE(f != NULL);
     List_free(f);
 }
 
@@ -93,14 +93,25 @@ TEST(ListTest, drop)
     }
     EXPECT_TRUE(!List_empty(f));
 
+    struct Personne *other = create_personne("insert", "order", 2002, 1, 1);
+    List_insert(f, other);
+
     for (int i = 0; i < 5; i++)
     {
         struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
-        struct Personne *tmp = (struct Personne *)List_remove(f, p);
-        ASSERT_STREQ(tmp->nom, "name");
+        struct Personne *rem = (struct Personne *)List_remove(f, p);
+        EXPECT_TRUE(rem->naissance.annee == 2000 + i);
+        EXPECT_TRUE(rem->naissance.mois == i);
+        EXPECT_TRUE(rem->naissance.jour == i);
         function_free_personne(p);
-        function_free_personne(tmp);
+        function_free_personne(rem);
     }
+
+    EXPECT_TRUE(!List_empty(f));
+    struct Personne *rem = (struct Personne *)List_remove(f, other);
+    function_free_personne(rem);
+    EXPECT_TRUE(List_empty(f));
+
     List_free(f);
 }
 
@@ -117,8 +128,8 @@ TEST(ListTest, empty)
     for (int i = 0; i < 5; i++)
     {
         struct Personne *p2 = create_personne("name", "fname", 2000 + i, i, i);
-        struct Personne *tmp = (struct Personne *)List_remove(f, p2);
-        function_free_personne(tmp);
+        struct Personne *rem = (struct Personne *)List_remove(f, p2);
+        function_free_personne(rem);
         function_free_personne(p2);
     }
 
@@ -140,8 +151,8 @@ TEST(ListTest, length)
     for (int i = 0; i < 5; i++)
     {
         struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
-        struct Personne *tmp = (struct Personne *)List_remove(f, p);
-        function_free_personne(tmp);
+        struct Personne *rem = (struct Personne *)List_remove(f, p);
+        function_free_personne(rem);
         function_free_personne(p);
     }
 

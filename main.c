@@ -4,12 +4,7 @@
 #include "assert.h"
 #include <string.h>
 
-void function_free_int(void *ptr_value)
-{
-    free(ptr_value);
-}
-
-void function_free_char(void *ptr_value)
+void function_free(void *ptr_value)
 {
     free(ptr_value);
 }
@@ -65,7 +60,7 @@ int function_compare_char(void *ptr_value1, void *ptr_value2)
 int main(void)
 {
     // Afficher, libérer int
-    List_t *f = List_create(function_display_int, function_free_int, function_compare_int);
+    List_t *f = List_create(function_display_int, function_free, function_compare_int);
 
     int *v1 = malloc(sizeof(int));
     int *v2 = malloc(sizeof(int));
@@ -81,7 +76,7 @@ int main(void)
     List_free(f);
 
     // Afficher char
-    List_t *f2 = List_create(function_display_char, function_free_char, function_compare_char);
+    List_t *f2 = List_create(function_display_char, function_free, function_compare_char);
 
     char *v4 = malloc(sizeof(char));
     char *v5 = malloc(sizeof(char));
