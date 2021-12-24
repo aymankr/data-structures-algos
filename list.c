@@ -97,6 +97,29 @@ struct Cell_s *List_get_element(List_t *f, gpointer v)
 }
 
 /**
+ * @brief Get cell from an index
+ *
+ * @param f list
+ * @param v value
+ * @return struct Cell_s*
+ */
+struct Cell_s *List_get_element_index(List_t *f, int index)
+{
+    if (!List_empty(f) && index <= (int)f->length)
+    {
+        struct Cell_s *c = f->head;
+        int i = 0;
+        while (i < index)
+        {
+            c = c->next;
+            i++;
+        }
+        return c;
+    }
+    return NULL;
+}
+
+/**
  * @brief Insert value in the head of the list
  * if the list has at least 1 element, insert the cell before the head
  * else the cell queue is the cell value
@@ -197,9 +220,9 @@ void List_display(const List_t *f)
  * @param v value
  * @return gpointer
  */
-gpointer List_remove(List_t *f, gpointer v)
+gpointer List_remove(List_t *f, int index)
 {
-    struct Cell_s *c = List_get_element(f, v);
+    struct Cell_s *c = List_get_element_index(f, index);
 
     if (c != NULL)
     {
