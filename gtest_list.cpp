@@ -65,7 +65,7 @@ TEST(ListTest, push)
     EXPECT_TRUE(!List_empty(f));
 
     // verify if the element was pushed
-    struct Personne *rem = (struct Personne *)List_remove(f, 0);
+    struct Personne *rem = (struct Personne *)List_remove(f, p);
     EXPECT_TRUE(p != NULL);
     EXPECT_TRUE(List_empty(f));
 
@@ -85,16 +85,18 @@ TEST(ListTest, pop)
     EXPECT_TRUE(List_length(f) == 1);
 
     // pop an unknown element
-    struct Personne *rem = (struct Personne *)List_remove(f, 4);
+    struct Personne *p2 = create_personne("namae", "fzzzzz", 2200, 3, 11);
+    struct Personne *rem = (struct Personne *)List_remove(f, p2);
     EXPECT_TRUE(rem == NULL);
 
     // pop an existing element
-    struct Personne *rem2 = (struct Personne *)List_remove(f, 0);
+    struct Personne *rem2 = (struct Personne *)List_remove(f, p);
     EXPECT_TRUE(rem2 != NULL);
 
     // empty
     EXPECT_TRUE(List_empty(f));
 
+    function_free_personne(p2);
     function_free_personne(rem2);
 
     List_free(f);
@@ -105,40 +107,31 @@ TEST(ListTest, drop)
     List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
 
     // push
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 5; i++)
     {
         struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
         List_insert(f, p);
     }
+    EXPECT_TRUE(!List_empty(f));
 
-    // insert an other, position in the list -> index 1
-    struct Personne *other = create_personne("insert", "order", 2001, 3, 4);
+    struct Personne *other = create_personne("insert", "order", 2002, 1, 1);
     List_insert(f, other);
 
-    // verification order
+    for (int i = 0; i < 5; i++)
+    {
+        struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
+        struct Personne *rem = (struct Personne *)List_remove(f, p);
+        EXPECT_TRUE(rem->naissance.annee == 2000 + i);
+        EXPECT_TRUE(rem->naissance.mois == i);
+        EXPECT_TRUE(rem->naissance.jour == i);
+        function_free_personne(p);
+        function_free_personne(rem);
+    }
 
-    // 2000,0,0
-    struct Personne *rem1 = (struct Personne *)List_remove(f, 2); // order of a queue
-    EXPECT_TRUE(rem1->naissance.annee == 2000);
-    EXPECT_TRUE(rem1->naissance.jour == rem1->naissance.mois);
-    EXPECT_TRUE(rem1->naissance.mois == 0);
-    ASSERT_STRNE(rem1->nom, "insert");
-    function_free_personne(rem1); // order of a queue
-
-    // 2001,3,4
-    struct Personne *rem2 = (struct Personne *)List_remove(f, 1);
-    EXPECT_TRUE(rem2->naissance.annee == 2001);
-    EXPECT_TRUE(rem2->naissance.mois == 4);
-    EXPECT_TRUE(rem2->naissance.jour == 3);
-    ASSERT_STREQ("insert", rem2->nom);
-    function_free_personne(rem2);
-
-    // 2001, 1,1
-    struct Personne *rem3 = (struct Personne *)List_remove(f, 0);
-    EXPECT_TRUE(rem3->naissance.annee == 2001);
-    EXPECT_TRUE(rem3->naissance.jour == rem3->naissance.mois == 1);
-    ASSERT_STRNE(rem3->nom, "insert");
-    function_free_personne(rem3);
+    EXPECT_TRUE(!List_empty(f));
+    struct Personne *rem = (struct Personne *)List_remove(f, other);
+    function_free_personne(rem);
+    EXPECT_TRUE(List_empty(f));
 
     List_free(f);
 }
@@ -154,8 +147,10 @@ TEST(ListTest, empty)
     EXPECT_TRUE(!List_empty(f)); // not empty
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *rem = (struct Personne *)List_remove(f, 4 - i);
+        struct Personne *p2 = create_personne("name", "fname", 2000 + i, i, i);
+        struct Personne *rem = (struct Personne *)List_remove(f, p2);
         function_free_personne(rem);
+        function_free_personne(p2);
     }
 
     EXPECT_TRUE(List_empty(f)); // empty
@@ -177,8 +172,10 @@ TEST(ListTest, length)
     // pop 5 times
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *rem = (struct Personne *)List_remove(f, 4 - i);
+        struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
+        struct Personne *rem = (struct Personne *)List_remove(f, p);
         function_free_personne(rem);
+        function_free_personne(p);
     }
 
     EXPECT_TRUE(List_length(f) == 0); // empty
