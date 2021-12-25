@@ -53,13 +53,14 @@ struct Cell_s *Cell_create(gpointer v)
 }
 
 /**
- * @brief Get position of a cell depending of the value
+ * @brief Get position of a cell in the ordered list, depending of the value
+ * return the previous position where the value will be inserted
  *
  * @param f list
  * @param v value
  * @return struct Cell_s*
  */
-struct Cell_s *List_get_position(List_t *f, gpointer v)
+struct Cell_s *List_get_cell_inferior(List_t *f, gpointer v)
 {
     if (!List_empty(f))
     {
@@ -75,13 +76,13 @@ struct Cell_s *List_get_position(List_t *f, gpointer v)
 }
 
 /**
- * @brief Get cell from a value
+ * @brief Get the first cell position of the same value
  *
  * @param f list
  * @param v value
  * @return struct Cell_s*
  */
-struct Cell_s *List_get_element(List_t *f, gpointer v)
+struct Cell_s *List_get_cell_same(List_t *f, gpointer v)
 {
     if (!List_empty(f))
     {
@@ -132,7 +133,7 @@ void List_insert_head(List_t *f, gpointer v)
  * @param v value
  * @param previous previous cell
  */
-void List_insert_position(List_t *f, gpointer v, struct Cell_s *previous)
+void List_insert_after(List_t *f, gpointer v, struct Cell_s *previous)
 {
     struct Cell_s *c = Cell_create(v);
     c->next = previous->next;
@@ -160,15 +161,16 @@ void List_insert_position(List_t *f, gpointer v, struct Cell_s *previous)
  */
 void List_insert(List_t *f, gpointer v)
 {
-    struct Cell_s *c = List_get_element(f, v);
-    if (c == NULL)
+    struct Cell_s *previous = List_get_cell_inferior(f, v);
+    if (previous == NULL)
     {
         List_insert_head(f, v);
     }
     else
     {
-        List_insert_position(f, v, c);
+        List_insert_after(f, v, previous);
     }
+    printf("\n--- INSERT ---\n");
     List_display(f);
 }
 
@@ -185,50 +187,67 @@ void List_display(const List_t *f)
         f->display(c->value);
         c = c->next;
     }
-    printf("NULL\n");
+    printf("--------------\n");
 }
 
 /**
- * @brief Get a cell from the value, remove it from the list
- * and set the values
- * depending if the cell to remove has a previous and/or/not a next cell
+ * @brief Remove the head of the list
  *
  * @param f list
- * @param v value
+ * @return gpointer
+ */
+gpointer List_remove_head(List_t *f)
+{
+    struct Cell_s *c = f->head;
+    f->head = c->next;
+    gpointer removed = c->value;
+    free(c);
+    f->length--;
+    return removed;
+}
+
+/**
+ * @brief Remove a cell positionned after the "previous"
+ *
+ * @param f list
+ * @param previous previous cell
+ * @return gpointer
+ */
+gpointer List_remove_after(List_t *f, struct Cell_s *previous)
+{
+    struct Cell_s *c = previous->next; // cell to remove
+    c->prev->next = c->next;
+    gpointer removed = c->value;
+    f->length--;
+    free(c);
+    return removed;
+}
+
+/**
+ * @brief Remove a cell in the list
+ * Get the cell from the value
+ * if this value correspond to the head remove the head
+ * else remove cell positionned after his previous
+ *
+ * @param f
+ * @param v
  * @return gpointer
  */
 gpointer List_remove(List_t *f, gpointer v)
 {
-    struct Cell_s *c = List_get_element(f, v);
+    gpointer removed = NULL;
+    struct Cell_s *c = List_get_cell_same(f, v);
 
-    if (c != NULL)
+    if (c == f->head)
     {
-        if (c->prev != NULL)
-        {
-            c->prev->next = c->next;
-        }
-        else
-        {
-            f->head = c->next;
-        }
-        if (c->next != NULL)
-        {
-            c->next->prev = c->prev;
-        }
-        else
-        {
-            f->queue = c->prev;
-        }
+        removed = List_remove_head(f);
     }
-    else
+    else if (c != NULL)
     {
-        return NULL;
+        removed = List_remove_after(f, c->prev);
     }
-
-    gpointer removed = c->value;
-    free(c);
-    f->length--;
-
+    printf("\n--- REMOVE ---\n");
+    List_display(f);
     return removed;
 }
 

@@ -31,21 +31,7 @@ void function_display_personne(gpointer v)
  */
 int function_compare_personne(gpointer v1, gpointer v2)
 {
-    struct Personne *p1 = (struct Personne *)v1;
-    struct Personne *p2 = (struct Personne *)v2;
-
-    if (p1->naissance.annee > p2->naissance.annee)
-    {
-        return 1;
-    }
-    else if (p1->naissance.annee < p2->naissance.annee)
-    {
-        return -1;
-    }
-    else
-    {
-        return 0;
-    }
+    return compare_personnes((const struct Personne*)v1, (const struct Personne*)v2);
 }
 
 TEST(ListTest, init_free)
@@ -109,8 +95,8 @@ TEST(ListTest, drop)
     // push
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
-        List_insert(f, p);
+        struct Personne *p1 = create_personne("name", "fname", 2000 + i, i, i);
+        List_insert(f, p1);
     }
     EXPECT_TRUE(!List_empty(f));
 
@@ -119,12 +105,12 @@ TEST(ListTest, drop)
 
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
-        struct Personne *rem = (struct Personne *)List_remove(f, p);
+        struct Personne *p2 = create_personne("name", "fname", 2000 + i, i, i);
+        struct Personne *rem = (struct Personne *)List_remove(f, p2);
         EXPECT_TRUE(rem->naissance.annee == 2000 + i);
         EXPECT_TRUE(rem->naissance.mois == i);
         EXPECT_TRUE(rem->naissance.jour == i);
-        function_free_personne(p);
+        function_free_personne(p2);
         function_free_personne(rem);
     }
 

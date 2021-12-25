@@ -26,5 +26,6 @@ void liberer_personne(struct Personne *ptr);
 void free_personne(struct Personne* p);
 void display_personne(const struct Personne* p);
 struct Personne* create_personne(const char* name, const char* fname, int year, int month, int day);
+int compare_personnes(const  struct Personne* p1, const struct Personne* p2);
 
 #endif

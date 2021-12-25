@@ -74,3 +74,19 @@ struct Personne *create_personne(const char *name, const char *fname, int year, 
     p->prenom = strdup(fname);
     return p;
 }
+
+int compare_personnes(const struct Personne *p1, const struct Personne *p2)
+{
+    if (p2->naissance.annee > p1->naissance.annee)
+    {
+        return 1;
+    }
+    else if (p2->naissance.annee < p1->naissance.annee)
+    {
+        return -1;
+    }
+    else
+    {
+        return 0;
+    }
+}
