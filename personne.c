@@ -90,3 +90,14 @@ int compare_personnes(const struct Personne *p1, const struct Personne *p2)
         return 0;
     }
 }
+
+void modify_personne(struct Personne *p1, struct Personne *p2)
+{
+    p1->naissance.annee = p2->naissance.annee;
+    p1->naissance.jour = p2->naissance.jour;
+    p1->naissance.mois = p2->naissance.mois;
+    free(p1->nom);
+    free(p1->prenom);
+    p1->nom = strdup(p2->nom);
+    p1->prenom = strdup(p2->prenom);
+}

@@ -17,6 +17,7 @@ struct List_s
     ptr_function_display display;
     ptr_function_free free;
     ptr_function_compare compare;
+    ptr_function_modify modify;
 };
 
 /**
@@ -27,7 +28,8 @@ struct List_s
  * @param compare function compare
  * @return List_t*
  */
-List_t *List_create(ptr_function_display display, ptr_function_free free, ptr_function_compare compare)
+List_t *List_create(ptr_function_display display, ptr_function_free free, ptr_function_compare compare,
+                    ptr_function_modify modify)
 {
     List_t *f = malloc(sizeof(struct List_s));
     f->queue = f->head = NULL;
@@ -35,6 +37,7 @@ List_t *List_create(ptr_function_display display, ptr_function_free free, ptr_fu
     f->display = display;
     f->free = free;
     f->compare = compare;
+    f->modify = modify;
     return f;
 }
 
@@ -54,7 +57,7 @@ struct Cell_s *Cell_create(gpointer v)
 
 /**
  * @brief Get position of a cell in the ordered list, depending of the value
- * return the previous position where the value will be inserted
+ * return the previous cell of the value that will be inserted
  *
  * @param f list
  * @param v value
@@ -98,9 +101,21 @@ struct Cell_s *List_get_cell_same(List_t *f, gpointer v)
 }
 
 /**
+ * @brief Modify value of a cell by a new value
+ *
+ * @param f list
+ * @param value current value
+ * @param new_value new value
+ */
+void List_modify(List_t *f, gpointer value, gpointer new_value)
+{
+    struct Cell_s *c = List_get_cell_same(f, value);
+    f->modify(c->value, new_value);
+}
+/**
  * @brief Insert value in the head of the list
  * if the list has at least 1 element, insert the cell before the head
- * else the cell queue is the cell value
+ * else the cell queue equals to the cell value
  *
  * @param f list
  * @param v value
@@ -238,7 +253,7 @@ gpointer List_remove(List_t *f, gpointer v)
     gpointer removed = NULL;
     struct Cell_s *c = List_get_cell_same(f, v);
 
-    if (c == f->head)
+    if (c != NULL && c == f->head)
     {
         removed = List_remove_head(f);
     }

@@ -31,19 +31,26 @@ void function_display_personne(gpointer v)
  */
 int function_compare_personne(gpointer v1, gpointer v2)
 {
-    return compare_personnes((const struct Personne*)v1, (const struct Personne*)v2);
+    return compare_personnes((const struct Personne *)v1, (const struct Personne *)v2);
+}
+
+void function_modify_personne(gpointer v1, gpointer v2)
+{
+    modify_personne((struct Personne *)v1, (struct Personne *)v2);
 }
 
 TEST(ListTest, init_free)
 {
-    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
+    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne,
+                            function_modify_personne);
     EXPECT_TRUE(f != NULL);
     List_free(f);
 }
 
 TEST(ListTest, push)
 {
-    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
+    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne,
+                            function_modify_personne);
 
     // push
     struct Personne *p = create_personne("name", "fname", 2000, 1, 10);
@@ -61,7 +68,8 @@ TEST(ListTest, push)
 
 TEST(ListTest, pop)
 {
-    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
+    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne,
+                            function_modify_personne);
 
     // push
     struct Personne *p = create_personne("name", "fname", 2000, 1, 10);
@@ -90,7 +98,8 @@ TEST(ListTest, pop)
 
 TEST(ListTest, drop)
 {
-    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
+    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne,
+                            function_modify_personne);
 
     // push
     for (int i = 0; i < 5; i++)
@@ -122,9 +131,33 @@ TEST(ListTest, drop)
     List_free(f);
 }
 
+TEST(ListTest, modify)
+{
+    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne,
+                            function_modify_personne);
+
+    // create a personne
+    struct Personne *p1 = create_personne("name", "fname", 2000, 1, 1);
+    List_insert(f, p1);
+
+    // modify p1 by p2
+    struct Personne *p2 = create_personne("new", "n", 2015, 3, 4);
+    List_modify(f, p1, p2);
+
+    // remove p1 and verify if p1 has attributes of p2
+    struct Personne *newp1 = (struct Personne *)List_remove(f, p1);
+    ASSERT_STREQ(newp1->nom, "new");
+    EXPECT_TRUE(newp1->naissance.annee == 2015);
+
+    function_free_personne(newp1);
+    function_free_personne(p2);
+    List_free(f);
+}
+
 TEST(ListTest, empty)
 {
-    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
+    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne,
+                            function_modify_personne);
     for (int i = 0; i < 5; i++)
     {
         struct Personne *p1 = create_personne("name", "fname", 2000 + i, i, i);
@@ -145,7 +178,8 @@ TEST(ListTest, empty)
 
 TEST(ListTest, length)
 {
-    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne);
+    List_s *f = List_create(function_display_personne, function_free_personne, function_compare_personne,
+                            function_modify_personne);
     EXPECT_TRUE(List_length(f) == 0); // empty
 
     for (int i = 0; i < 5; i++) // push 5 times
