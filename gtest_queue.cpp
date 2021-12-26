@@ -9,45 +9,45 @@
 extern "C"
 {
 #include "queue.h"
-#include "personne.h"
+#include "person.h"
 }
 
-void function_free_personne(gpointer v)
+void function_free_person(gpointer v)
 {
-    free_personne((struct Personne *)v);
+    free_person((struct Person *)v);
 }
 
-void function_display_personne(gpointer v)
+void function_display_person(gpointer v)
 {
-    display_personne((const struct Personne *)v);
+    display_person((const struct Person *)v);
 }
 
 TEST(QueueTest, init_free)
 {
-    Queue_s *f = Queue_create(function_display_personne, function_free_personne);
+    Queue_s *f = Queue_create(function_display_person, function_free_person);
     EXPECT_FALSE(f == NULL);
     Queue_free(f);
 }
 
 TEST(QueueTest, push)
 {
-    Queue_s *f = Queue_create(function_display_personne, function_free_personne);
+    Queue_s *f = Queue_create(function_display_person, function_free_person);
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
-        Queue_insert(f, p);
+        struct Person *p = create_person("name", "fname", 2000 + i, i, i);
+        Enqueue(f, p);
     }
 
     // verifie qu'ils ont été push
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *rem = (struct Personne *)Queue_remove(f);
-        ASSERT_STREQ(rem->nom, "name");
-        ASSERT_STREQ(rem->prenom, "fname");
-        EXPECT_TRUE(rem->naissance.annee == 2000 + i);
-        EXPECT_TRUE(rem->naissance.mois == i);
-        EXPECT_TRUE(rem->naissance.jour == i);
-        function_free_personne(rem);
+        struct Person *rem = (struct Person *)Dequeue(f);
+        ASSERT_STREQ(rem->name, "name");
+        ASSERT_STREQ(rem->firstname, "fname");
+        EXPECT_TRUE(rem->birth.year == 2000 + i);
+        EXPECT_TRUE(rem->birth.month == i);
+        EXPECT_TRUE(rem->birth.day == i);
+        function_free_person(rem);
     }
 
     Queue_free(f);
@@ -55,35 +55,35 @@ TEST(QueueTest, push)
 
 TEST(QueueTest, pop)
 {
-    Queue_s *f = Queue_create(function_display_personne, function_free_personne);
+    Queue_s *f = Queue_create(function_display_person, function_free_person);
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
-        Queue_insert(f, p);
+        struct Person *p = create_person("name", "fname", 2000 + i, i, i);
+        Enqueue(f, p);
     }
 
     EXPECT_TRUE(Queue_length(f) == 5);
-    struct Personne *rem = (struct Personne *)Queue_remove(f);
+    struct Person *rem = (struct Person *)Dequeue(f);
     EXPECT_TRUE(Queue_length(f) == 4);
 
-    function_free_personne(rem);
+    function_free_person(rem);
     Queue_free(f);
 }
 
 TEST(QueueTest, drop)
 {
-    Queue_s *f = Queue_create(function_display_personne, function_free_personne);
+    Queue_s *f = Queue_create(function_display_person, function_free_person);
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
-        Queue_insert(f, p);
+        struct Person *p = create_person("name", "fname", 2000 + i, i, i);
+        Enqueue(f, p);
     }
     EXPECT_TRUE(!Queue_empty(f));
 
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *rem = (struct Personne *)Queue_remove(f);
-        function_free_personne(rem);
+        struct Person *rem = (struct Person *)Dequeue(f);
+        function_free_person(rem);
     }
 
     EXPECT_TRUE(Queue_empty(f));
@@ -92,13 +92,13 @@ TEST(QueueTest, drop)
 
 TEST(QueueTest, empty)
 {
-    Queue_s *f = Queue_create(function_display_personne, function_free_personne);
+    Queue_s *f = Queue_create(function_display_person, function_free_person);
     EXPECT_TRUE(Queue_empty(f));
 
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
-        Queue_insert(f, p);
+        struct Person *p = create_person("name", "fname", 2000 + i, i, i);
+        Enqueue(f, p);
     }
     EXPECT_TRUE(!Queue_empty(f));
 
@@ -107,20 +107,20 @@ TEST(QueueTest, empty)
 
 TEST(QueueTest, length)
 {
-    Queue_s *f = Queue_create(function_display_personne, function_free_personne);
+    Queue_s *f = Queue_create(function_display_person, function_free_person);
     EXPECT_TRUE(Queue_length(f) == 0);
 
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *p = create_personne("name", "fname", 2000 + i, i, i);
-        Queue_insert(f, p);
+        struct Person *p = create_person("name", "fname", 2000 + i, i, i);
+        Enqueue(f, p);
     }
     EXPECT_TRUE(Queue_length(f) == 5);
 
     for (int i = 0; i < 5; i++)
     {
-        struct Personne *rem = (struct Personne *)Queue_remove(f);
-        function_free_personne(rem);
+        struct Person *rem = (struct Person *)Dequeue(f);
+        function_free_person(rem);
     }
     EXPECT_TRUE(Queue_length(f) == 0);
     Queue_free(f);

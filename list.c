@@ -1,206 +1,202 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "list.h"
-#include <assert.h>
-#include "personne.h"
 
-struct Cell_s
+struct Addr
 {
     gpointer value;
-    struct Cell_s *prev, *next;
+    struct Addr *prev, *next;
 };
 
 struct List_s
 {
-    struct Cell_s *head, *queue;
+    struct Addr *head, *queue;
     unsigned int length;
-    ptr_function_display display;
-    ptr_function_free free;
-    ptr_function_compare compare;
-    ptr_function_modify modify;
+    function_display display;
+    function_free free;
+    function_compare compare;
+    function_modify modify;
 };
 
 /**
  * @brief Construct a file
  *
  * @param display function display
- * @param free function free
+ * @param lree function free
  * @param compare function compare
  * @return List_t*
  */
-List_t *List_create(ptr_function_display display, ptr_function_free free, ptr_function_compare compare,
-                    ptr_function_modify modify)
+List_t *List_create(function_display display, function_free free, function_compare compare,
+                    function_modify modify)
 {
-    List_t *f = malloc(sizeof(struct List_s));
-    f->queue = f->head = NULL;
-    f->length = 0;
-    f->display = display;
-    f->free = free;
-    f->compare = compare;
-    f->modify = modify;
-    return f;
+    List_t *l = malloc(sizeof(struct List_s));
+    l->queue = l->head = NULL;
+    l->length = 0;
+    l->display = display;
+    l->free = free;
+    l->compare = compare;
+    l->modify = modify;
+    return l;
 }
 
 /**
- * @brief Construct a cell
+ * @brief Construct an address
  *
- * @param v value
- * @return struct Cell_s*
+ * @param g value
+ * @return struct Addr*
  */
-struct Cell_s *Cell_create(gpointer v)
+struct Addr *address_create(gpointer g)
 {
-    struct Cell_s *Cell = malloc(sizeof(struct Cell_s));
-    Cell->prev = Cell->next = NULL;
-    Cell->value = v;
-    return Cell;
+    struct Addr *address = malloc(sizeof(struct Addr));
+    address->prev = address->next = NULL;
+    address->value = g;
+    return address;
 }
 
 /**
- * @brief Get position of a cell in the ordered list, depending of the value
- * return the previous cell of the value that will be inserted
+ * @brief Get position of an address in the ordered list, depending of the value
+ * return the previous address of the value that will be inserted
  *
- * @param f list
- * @param v value
- * @return struct Cell_s*
+ * @param l list
+ * @param g value
+ * @return struct Addr*
  */
-struct Cell_s *List_get_cell_inferior(List_t *f, gpointer v)
+struct Addr *List_get_address_inferior(List_t *l, gpointer g)
 {
-    if (!List_empty(f))
+    if (!List_empty(l))
     {
-        struct Cell_s *c = f->head;
-        while (c != NULL)
+        struct Addr *a = l->head;
+        while (a != NULL)
         {
-            if (f->compare(c->value, v) > 0)
-                return c->prev;
-            c = c->next;
+            if (l->compare(a->value, g) > 0)
+                return a->prev;
+            a = a->next;
         }
     }
     return NULL;
 }
 
 /**
- * @brief Get the first cell position of the same value
+ * @brief Get the first address position of the same value
  *
- * @param f list
- * @param v value
- * @return struct Cell_s*
+ * @param l list
+ * @param g value
+ * @return struct Addr*
  */
-struct Cell_s *List_get_cell_same(List_t *f, gpointer v)
+struct Addr *List_get_addr_same(List_t *l, gpointer g)
 {
-    if (!List_empty(f))
+    if (!List_empty(l))
     {
-        struct Cell_s *c = f->head;
-        while (c != NULL)
+        struct Addr *a = l->head;
+        while (a != NULL)
         {
-            if (f->compare(c->value, v) == 0)
-                return c;
-            c = c->next;
+            if (l->compare(a->value, g) == 0)
+                return a;
+            a = a->next;
         }
     }
     return NULL;
 }
 
 /**
- * @brief Modify value of a cell by a new value
+ * @brief Modify value of an address by a new value
  *
- * @param f list
- * @param value current value
+ * @param l list
+ * @param g current value
  * @param new_value new value
  */
-void List_modify(List_t *f, gpointer value, gpointer new_value)
+void List_modify(List_t *l, gpointer g, gpointer new_value)
 {
-    struct Cell_s *c = List_get_cell_same(f, value);
-    f->modify(c->value, new_value);
+    struct Addr *a = List_get_addr_same(l, g);
+    l->modify(a->value, new_value);
 }
 /**
  * @brief Insert value in the head of the list
- * if the list has at least 1 element, insert the cell before the head
- * else the cell queue equals to the cell value
+ * if the list has at least 1 element, insert the address before the head
+ * else the address queue equals to the address value
  *
- * @param f list
- * @param v value
+ * @param l list
+ * @param g value
  */
-void List_insert_head(List_t *f, gpointer v)
+void List_insert_head(List_t *l, gpointer g)
 {
-    struct Cell_s *c = Cell_create(v);
-    c->next = f->head;
+    struct Addr *a = address_create(g);
+    a->next = l->head;
 
-    if (List_length(f) > 0)
+    if (l->length++ > 0)
     {
-        f->head->prev = c;
+        l->head->prev = a;
     }
     else
     {
-        f->queue = c;
+        l->queue = a;
     }
 
-    f->head = c;
-    f->length++;
+    l->head = a;
 }
 
 /**
- * @brief Insert value after the previous cell
+ * @brief Insert value after the previous address
  * if there is 1 element, insert in the head
- * else set the previous of the next cell being c
- * set the next of the previous at c
+ * else set the previous of the next address being a
+ * set the next of the previous at a
  *
- * @param f list
- * @param v value
- * @param previous previous cell
+ * @param l list
+ * @param g value
+ * @param previous previous address
  */
-void List_insert_after(List_t *f, gpointer v, struct Cell_s *previous)
+void List_insert_after(List_t *l, gpointer g, struct Addr *previous)
 {
-    struct Cell_s *c = Cell_create(v);
-    c->next = previous->next;
-    c->prev = previous;
+    struct Addr *a = address_create(g);
+    a->next = previous->next;
+    a->prev = previous;
 
-    if (List_length(f) == 1)
+    if (l->length++ == 1)
     {
-        f->queue = f->head = c;
+        l->queue = l->head = a;
     }
     else
     {
-        c->next->prev = c;
+        a->next->prev = a;
     }
 
-    previous->next = c;
-    f->length++;
+    previous->next = a;
 }
 
 /**
- * @brief Insert value in the head if the cell doesn't exist, else insert
- * in the good position
+ * @brief Insert value
+ * in the good position if the address exists, else insert in the head
  *
- * @param f list
- * @param v value
+ * @param l list
+ * @param g value
  */
-void List_insert(List_t *f, gpointer v)
+void List_insert(List_t *l, gpointer g)
 {
-    struct Cell_s *previous = List_get_cell_inferior(f, v);
-    if (previous == NULL)
+    struct Addr *previous = List_get_address_inferior(l, g);
+    if (previous != NULL)
     {
-        List_insert_head(f, v);
+        List_insert_after(l, g, previous);
     }
     else
     {
-        List_insert_after(f, v, previous);
+        List_insert_head(l, g);
     }
     printf("\n--- INSERT ---\n");
-    List_display(f);
+    List_display(l);
 }
 
 /**
  * @brief Display values of a list
  *
- * @param f list
+ * @param l list
  */
-void List_display(const List_t *f)
+void List_display(const List_t *l)
 {
-    struct Cell_s *c = f->head;
-    while (c != NULL)
+    struct Addr *a = l->head;
+    while (a != NULL)
     {
-        f->display(c->value);
-        c = c->next;
+        l->display(a->value);
+        a = a->next;
     }
     printf("--------------\n");
 }
@@ -208,100 +204,103 @@ void List_display(const List_t *f)
 /**
  * @brief Remove the head of the list
  *
- * @param f list
+ * @param l list
  * @return gpointer
  */
-gpointer List_remove_head(List_t *f)
+gpointer List_remove_head(List_t *l)
 {
-    struct Cell_s *c = f->head;
-    f->head = c->next;
-    gpointer removed = c->value;
-    free(c);
-    f->length--;
+    struct Addr *a = l->head;
+    l->head = a->next;
+    gpointer removed = a->value;
+    free(a);
+    l->length--;
     return removed;
 }
 
 /**
- * @brief Remove a cell positionned after the "previous"
+ * @brief Remove an address positionned after the "previous"
  *
- * @param f list
- * @param previous previous cell
+ * @param l list
+ * @param previous previous address
  * @return gpointer
  */
-gpointer List_remove_after(List_t *f, struct Cell_s *previous)
+gpointer List_remove_after(List_t *l, struct Addr *previous)
 {
-    struct Cell_s *c = previous->next; // cell to remove
-    c->prev->next = c->next;
-    gpointer removed = c->value;
-    f->length--;
-    free(c);
+    struct Addr *a = previous->next; // address value to remove
+    a->prev->next = a->next;
+    gpointer removed = a->value;
+    l->length--;
+    free(a);
     return removed;
 }
 
 /**
- * @brief Remove a cell in the list
- * Get the cell from the value
- * if this value correspond to the head remove the head
- * else remove cell positionned after his previous
+ * @brief Remove a value in the list
+ * Get the address from the value
+ * if this value doesn't correspond to the head remove address positionned after his previous
+ * else remove the head
  *
- * @param f
- * @param v
+ * @param l
+ * @param g
  * @return gpointer
  */
-gpointer List_remove(List_t *f, gpointer v)
+gpointer List_remove(List_t *l, gpointer g)
 {
     gpointer removed = NULL;
-    struct Cell_s *c = List_get_cell_same(f, v);
+    struct Addr *a = List_get_addr_same(l, g);
 
-    if (c != NULL && c == f->head)
+    if (a != NULL)
     {
-        removed = List_remove_head(f);
-    }
-    else if (c != NULL)
-    {
-        removed = List_remove_after(f, c->prev);
+        if (a != l->head)
+        {
+            removed = List_remove_after(l, a->prev);
+        }
+        else
+        {
+            removed = List_remove_head(l);
+        }
     }
     printf("\n--- REMOVE ---\n");
-    List_display(f);
+    List_display(l);
     return removed;
 }
 
 /**
  * @brief Get the length of the list
  *
- * @param f list
+ * @param l list
  * @return unsigned int
  */
-unsigned int List_length(const List_t *f)
+unsigned int List_length(const List_t *l)
 {
-    return f->length;
+    return l->length;
 }
 
 /**
  * @brief Verify if the list is empty
  *
- * @param f list
+ * @param l list
  * @return true
  * @return false
  */
-bool List_empty(const List_t *f)
+bool List_empty(const List_t *l)
 {
-    return List_length(f) == 0;
+    return List_length(l) == 0;
 }
 
 /**
- * @brief Memory free of all the cells of a list, and free the list
+ * @brief Memory free of all the addresss of a list, and free the list
  *
- * @param f list
+ * @param l list
  */
-void List_free(List_t *f)
+void List_free(List_t *l)
 {
-    struct Cell_s *c = f->head;
-    while (c != NULL)
+    struct Addr *a = l->head;
+    while (a != NULL)
     {
-        f->free(c);
-        c = c->next;
+        l->free(a);
+        a = a->next;
     }
-    free(f);
-    f = NULL;
+    free(l);
+    l = NULL;
 }

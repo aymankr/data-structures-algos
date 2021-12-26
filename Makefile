@@ -6,13 +6,13 @@ ALL: googletest gtest_queue gtest_list
 # dependencies
 queue.o: queue.c queue.h
 list.o: list.c list.h
-personne.o : personne.c personne.h
+person.o : person.c person.h
 
-gtest_queue: queue.o personne.o gtest_queue.cpp
-	g++ -pthread -std=c++11 -g -fsanitize=address -fno-omit-frame-pointer gtest_queue.cpp queue.o personne.o -o gtest_queue -I./googletest/googletest/include -L./googletest/build/lib -lgtest
+gtest_queue: queue.o person.o gtest_queue.cpp
+	g++ -pthread -std=c++11 -g -fsanitize=address -fno-omit-frame-pointer gtest_queue.cpp queue.o person.o -o gtest_queue -I./googletest/googletest/include -L./googletest/build/lib -lgtest
 
-gtest_list: list.o personne.o gtest_list.cpp
-	g++ -pthread -std=c++11 -g -fsanitize=address -fno-omit-frame-pointer gtest_list.cpp list.o personne.o -o gtest_list -I./googletest/googletest/include -L./googletest/build/lib -lgtest
+gtest_list: list.o person.o gtest_list.cpp
+	g++ -pthread -std=c++11 -g -fsanitize=address -fno-omit-frame-pointer gtest_list.cpp list.o person.o -o gtest_list -I./googletest/googletest/include -L./googletest/build/lib -lgtest
 
 test_queue: test_queue.o queue.o
 

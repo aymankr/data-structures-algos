@@ -3,7 +3,7 @@
 #include "list.h"
 #include "assert.h"
 #include <string.h>
-
+/*
 void function_free(void *ptr_value)
 {
     free(ptr_value);
@@ -92,4 +92,4 @@ int main(void)
     List_free(f2);
 
     return EXIT_SUCCESS;
-}
+}*/

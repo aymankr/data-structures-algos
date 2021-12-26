@@ -6,5 +6,6 @@ gtest_queue.o
 gtest_list.o
 gtest_queue
 gtest_list
-personne.o
+person.o
 googletest
+code.pdf~

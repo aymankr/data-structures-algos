@@ -5,18 +5,18 @@
 typedef struct List_s List_t;
 
 typedef void *gpointer;
-typedef void (*ptr_function_display)(gpointer data);
-typedef void (*ptr_function_free)(gpointer data);
-typedef int (*ptr_function_compare)(gpointer data1, gpointer data2);
-typedef void (*ptr_function_modify)(gpointer data1, gpointer data2);
-void List_display(const List_t *f);
-List_t *List_create(ptr_function_display display, ptr_function_free free, ptr_function_compare compare,
-                    ptr_function_modify modify);
-void List_insert(List_t *f, gpointer v);
-gpointer List_remove(List_t *f, gpointer v);
-unsigned int List_length(const List_t *f);
-void List_modify(List_t *f, gpointer value, gpointer new_value);
-bool List_empty(const List_t *f);
-void List_free(List_t *f);
+typedef void (*function_display)(gpointer g);
+typedef void (*function_free)(gpointer g);
+typedef int (*function_compare)(gpointer g1, gpointer g2);
+typedef void (*function_modify)(gpointer g1, gpointer g2);
+void List_display(const List_t *l);
+List_t *List_create(function_display display, function_free free, function_compare compare,
+                    function_modify modify);
+void List_insert(List_t *l, gpointer g);
+gpointer List_remove(List_t *l, gpointer g);
+unsigned int List_length(const List_t *l);
+void List_modify(List_t *l, gpointer g, gpointer new_g);
+bool List_empty(const List_t *l);
+void List_free(List_t *l);
 
 #endif

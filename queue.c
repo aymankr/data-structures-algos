@@ -1,30 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "queue.h"
-#include "assert.h"
 
-struct Cell_s
+struct Addr_s
 {
     gpointer value;
-    struct Cell_s *prev, *next;
+    struct Addr_s *prev, *next;
 };
 
 struct Queue_s
 {
-    struct Cell_s *head, *queue;
+    struct Addr_s *head, *queue;
     unsigned int length;
-    ptr_function_display display;
-    ptr_function_free free;
+    function_display display;
+    function_free free;
 };
 
 /**
  * @brief Construct a queue
- * 
+ *
  * @param display function display
  * @param free function free
- * @return Queue_t* 
+ * @return Queue_t*
  */
-Queue_t *Queue_create(ptr_function_display display, ptr_function_free free)
+Queue_t *Queue_create(function_display display, function_free free)
 {
     Queue_t *f = malloc(sizeof(struct Queue_s));
     f->queue = f->head = NULL;
@@ -35,30 +34,30 @@ Queue_t *Queue_create(ptr_function_display display, ptr_function_free free)
 }
 
 /**
- * @brief Construct a cell
- * 
- * @param v value
- * @return struct Cell_s* 
+ * @brief Construct an address
+ *
+ * @param g value
+ * @return struct Addr_s*
  */
-struct Cell_s *Cell_create(gpointer v)
+struct Addr_s *address_create(gpointer g)
 {
-    struct Cell_s *Cell = malloc(sizeof(struct Cell_s));
-    Cell->prev = Cell->next = NULL;
-    Cell->value = v;
-    return Cell;
+    struct Addr_s *address = malloc(sizeof(struct Addr_s));
+    address->prev = address->next = NULL;
+    address->value = g;
+    return address;
 }
 
 /**
- * @brief Insert a cell in the queue
+ * @brief Insert an address in the queue
  * if the queue is not empty, insert before the head
- * else insert the first element in the head 
- * 
+ * else insert the first element in the head
+ *
  * @param f queue
- * @param v value
+ * @param g value
  */
-void Queue_insert(Queue_t *f, gpointer v)
+void Enqueue(Queue_t *f, gpointer g)
 {
-    struct Cell_s *c = Cell_create(v);
+    struct Addr_s *c = address_create(g);
     c->next = f->head;
 
     if (Queue_length(f) > 0)
@@ -76,12 +75,12 @@ void Queue_insert(Queue_t *f, gpointer v)
 
 /**
  * @brief Display values of a queue
- * 
+ *
  * @param f queue
  */
 void Queue_display(const Queue_t *f)
 {
-    struct Cell_s *c = f->head;
+    struct Addr_s *c = f->head;
     while (c != NULL)
     {
         f->display(c->value);
@@ -91,18 +90,17 @@ void Queue_display(const Queue_t *f)
 }
 
 /**
- * @brief Remove the head cell of the queue if there is at least 1 element
- * if there is only 1 cell, set the head and the queue at NULL
- * else remove the head by replacing the cell queue by the previous cell queue
- * 
+ * @brief Remove the head address of the queue if there is at least 1 element
+ * if there is only 1 address, set the head and the queue at NULL
+ * else remove the head by replacing the address queue by the previous address queue
+ *
  * @param f queue
- * @return gpointer 
+ * @return gpointer
  */
-gpointer Queue_remove(Queue_t *f)
+gpointer Dequeue(Queue_t *f)
 {
-    assert(Queue_length(f) > 0);
-    gpointer v = f->queue->value;
-    struct Cell_s *tmp = f->queue;
+    gpointer g = f->queue->value;
+    struct Addr_s *tmp = f->queue;
 
     if (Queue_length(f) == 1)
     {
@@ -115,14 +113,14 @@ gpointer Queue_remove(Queue_t *f)
     free(tmp);
     tmp = NULL;
     f->length--;
-    return v;
+    return g;
 }
 
 /**
  * @brief Get length of a queue
- * 
+ *
  * @param f queue
- * @return unsigned int 
+ * @return unsigned int
  */
 unsigned int Queue_length(const Queue_t *f)
 {
@@ -131,10 +129,10 @@ unsigned int Queue_length(const Queue_t *f)
 
 /**
  * @brief Verify if a queue is empty
- * 
+ *
  * @param f queue
- * @return true 
- * @return false 
+ * @return true
+ * @return false
  */
 bool Queue_empty(const Queue_t *f)
 {
@@ -143,15 +141,15 @@ bool Queue_empty(const Queue_t *f)
 
 /**
  * @brief Free pointer values of the queue, free the queue
- * 
+ *
  * @param f queue
  */
 void Queue_free(Queue_t *f)
 {
     while (!Queue_empty(f))
     {
-        gpointer v = Queue_remove(f);
-        f->free(v);
+        gpointer g = Dequeue(f);
+        f->free(g);
     }
     free(f);
     f = NULL;
