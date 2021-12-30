@@ -90,7 +90,7 @@ struct Addr *List_get_address_inferior(List_t *l, gpointer g)
             }
             a = a->next;
         }
-        return List_get_last(l); // case where we insert an element before after the last
+        return List_get_last(l); // case where we insert an element after the last
     }
     return NULL;
 }

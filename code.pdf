@@ -2,7 +2,7 @@
 %%Title: Makefile, list.h, person.h, queue.h, list.c, person.c, queue.c, gtest_list.cpp, gtest_queue.cpp
 %%For: ay
 %%Creator: a2ps version 4.14
-%%CreationDate: Mon Dec 27 00:26:01 2021
+%%CreationDate: Thu Dec 30 15:10:50 2021
 %%BoundingBox: 24 24 588 768
 %%DocumentData: Clean7Bit
 %%Orientation: Landscape
@@ -816,7 +816,7 @@ x0 y0 moveto
 border
 grestore
 (Printed by ay) rhead
-(Makefile) (1/13) (Monday December 27, 2021) footer
+(Makefile) (1/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -895,7 +895,7 @@ x0 y0 moveto
 border
 grestore
 (Printed by ay) rhead
-(list.h) (2/13) (Monday December 27, 2021) footer
+(list.h) (2/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -984,7 +984,7 @@ x0 y0 moveto
 border
 grestore
 (Printed by ay) rhead
-(person.h) (3/13) (Monday December 27, 2021) footer
+(person.h) (3/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -1051,7 +1051,7 @@ x0 y0 moveto
 border
 grestore
 (Printed by ay) rhead
-(queue.h) (4/13) (Monday December 27, 2021) footer
+(queue.h) (4/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -1158,6 +1158,37 @@ x0 y0 moveto
 (}) N
 () N
 (/**) c n
+( * @brief Get the last address of the list \(not the head\)) N
+( *) N
+( * @param l) N
+( * @return struct Addr*) N
+( */) N
+(struct) k
+( Addr *List_get_last\(List_t *l\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *a = l->head;) p n
+(    ) S
+(while) K
+( \(a->next != ) p
+(NULL) K
+(\)) p n
+(    {) N
+(        a = a->next;) N
+(    }) N
+(list.c) (Page 1/5) (Dec 30, 21 15:10) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    ) p
+(return) K
+( a;) p n
+(}) N
+() N
+(/**) c n
 ( * @brief Get position of an address in the ordered list, depending of the value) N
 ( * return the previous address of the value that will be inserted) N
 ( *) N
@@ -1175,13 +1206,7 @@ x0 y0 moveto
 (        ) S
 (struct) k
 ( Addr *a = l->head;) p n
-(list.c) (Page 1/5) (Dec 27, 21 0:22) title
-border
-/v 1 store
-/x0 x v get 3.147420 add sx cw mul add store
-/y0 y v get bfs th add sub store
-x0 y0 moveto
-(        ) p
+(        ) S
 (while) K
 ( \(a != ) p
 (NULL) K
@@ -1189,13 +1214,20 @@ x0 y0 moveto
 (        {) N
 (            ) S
 (if) K
-( \(l->compare\(a->value, g\) > 0\)) p n
+( \(l->compare\(g, a->value\) > 0\)) p n
+(            {) N
 (                ) S
 (return) K
 ( a->prev;) p n
+(            }) N
 (            a = a->next;) N
 (        }) N
-(    }) N
+(        ) S
+(return) K
+( List_get_last\(l\); ) p
+(// case where we insert an element after the la) c n
+(st) N
+(    }) p n
 (    ) S
 (return) K
 ( ) p
@@ -1262,7 +1294,27 @@ x0 y0 moveto
 ( * if the list has at least 1 element, insert the address before the head) N
 ( * else the address queue equals to the address value) N
 ( *) N
-( * @param l list) N
+(list.c) (Page 2/5) (Dec 30, 21 15:10) title
+border
+grestore
+(Printed by ay) rhead
+(list.c) (5/13) (Thursday December 30, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3-4) 6
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+( * @param l list) c n
 ( * @param g value) N
 ( */) N
 (void) k
@@ -1288,26 +1340,6 @@ x0 y0 moveto
 (    l->head = a;) N
 (}) N
 () N
-(list.c) (Page 2/5) (Dec 27, 21 0:22) title
-border
-grestore
-(Printed by ay) rhead
-(list.c) (5/13) (Monday December 27, 2021) footer
-end % of iso1dict
-pagesave restore
-showpage
-%%Page: (3-4) 6
-%%BeginPageSetup
-/pagesave save def
-sh 0 translate 90 rotate
-%%EndPageSetup
-iso1dict begin
-gsave
-llx lly 12 add translate
-/v 0 store
-/x0 x v get 3.147420 add sx cw mul add store
-/y0 y v get bfs th add sub store
-x0 y0 moveto
 (/**) c n
 ( * @brief Insert value after the previous address) N
 ( * if there is 1 element, insert in the head) N
@@ -1336,8 +1368,13 @@ x0 y0 moveto
 (        l->queue = l->head = a;) N
 (    }) N
 (    ) S
-(else) K n
-(    {) p n
+(else) K
+( ) p
+(if) K
+( \(previous->next != ) p
+(NULL) K
+(\)) p n
+(    {) N
 (        a->next->prev = a;) N
 (    }) N
 () N
@@ -1356,14 +1393,14 @@ x0 y0 moveto
 ({) N
 (    ) S
 (struct) k
-( Addr *previous = List_get_address_inferior\(l, g\);) p n
+( Addr *a = List_get_address_inferior\(l, g\);) p n
 (    ) S
 (if) K
-( \(previous != ) p
+( \(a != ) p
 (NULL) K
 (\)) p n
 (    {) N
-(        List_insert_after\(l, g, previous\);) N
+(        List_insert_after\(l, g, a\);) N
 (    }) N
 (    ) S
 (else) K n
@@ -1375,7 +1412,13 @@ x0 y0 moveto
 ("\);) p n
 (    List_display\(l\);) N
 (}) N
-() N
+(list.c) (Page 3/5) (Dec 30, 21 15:10) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
 (/**) c n
 ( * @brief Display values of a list) N
 ( *) N
@@ -1406,13 +1449,7 @@ x0 y0 moveto
 (/**) c n
 ( * @brief Remove the head of the list) N
 ( *) N
-(list.c) (Page 3/5) (Dec 27, 21 0:22) title
-border
-/v 1 store
-/x0 x v get 3.147420 add sx cw mul add store
-/y0 y v get bfs th add sub store
-x0 y0 moveto
-( * @param l list) c n
+( * @param l list) N
 ( * @return gpointer) N
 ( */) N
 (gpointer List_remove_head\(List_t *l\)) p n
@@ -1444,7 +1481,27 @@ x0 y0 moveto
 (struct) k
 ( Addr *a = previous->next; ) p
 (// address value to remove) c n
-(    a->prev->next = a->next;) p n
+(    ) p
+(if) K
+( \(a->prev != ) p
+(NULL) K
+(\)) p n
+(    {) N
+(        a->prev->next = a->next;) N
+(    }) N
+(    ) S
+(if) K
+( \(a->next != ) p
+(NULL) K
+(\)) p n
+(    {) N
+(        a->next->prev = a->prev;) N
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        l->queue = a->prev;) N
+(    }) N
 (    gpointer removed = a->value;) N
 (    l->length--;) N
 (    free\(a\);) N
@@ -1461,7 +1518,27 @@ x0 y0 moveto
 ( * else remove the head) N
 ( *) N
 ( * @param l) N
-( * @param g) N
+(list.c) (Page 4/5) (Dec 30, 21 15:10) title
+border
+grestore
+(Printed by ay) rhead
+(list.c) (6/13) (Thursday December 30, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5) 7
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+( * @param g) c n
 ( * @return gpointer) N
 ( */) N
 (gpointer List_remove\(List_t *l, gpointer g\)) p n
@@ -1512,27 +1589,7 @@ x0 y0 moveto
 ( List_length\() p
 (const) K
 ( List_t *l\)) p n
-(list.c) (Page 4/5) (Dec 27, 21 0:22) title
-border
-grestore
-(Printed by ay) rhead
-(list.c) (6/13) (Monday December 27, 2021) footer
-end % of iso1dict
-pagesave restore
-showpage
-%%Page: (5) 7
-%%BeginPageSetup
-/pagesave save def
-sh 0 translate 90 rotate
-%%EndPageSetup
-iso1dict begin
-gsave
-llx lly 12 add translate
-/v 0 store
-/x0 x v get 3.147420 add sx cw mul add store
-/y0 y v get bfs th add sub store
-x0 y0 moveto
-({) p n
+({) N
 (    ) S
 (return) K
 ( l->length;) p n
@@ -1571,19 +1628,23 @@ x0 y0 moveto
 (NULL) K
 (\)) p n
 (    {) N
-(        l->free\(a\);) N
-(        a = a->next;) N
+(        l->free\(a->value\);) N
+(        ) S
+(struct) k
+( Addr *tmp = a->next;) p n
+(        free\(a\);) N
+(        a = tmp;) N
 (    }) N
 (    free\(l\);) N
 (    l = ) S
 (NULL) K
 (;) p n
 (}) S
-(list.c) (Page 5/5) (Dec 27, 21 0:22) title
+(list.c) (Page 5/5) (Dec 30, 21 15:10) title
 border
 grestore
 (Printed by ay) rhead
-(list.c) (7/13) (Monday December 27, 2021) footer
+(list.c) (7/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -1690,7 +1751,21 @@ x0 y0 moveto
 ({) N
 (    ) S
 (if) K
-( \(p2->birth.year > p1->birth.year\)) p n
+( \(strcmp\(p1->name, p2->name\) == 0 &&) p n
+(        strcmp\(p1->firstname, p2->firstname\) == 0 &&) N
+(        p1->birth.day == p2->birth.day &&) N
+(        p1->birth.month == p2->birth.month &&) N
+(        p1->birth.year == p2->birth.year\)) N
+(    {) N
+(        ) S
+(return) K
+( 0;) p n
+(    }) N
+(    ) S
+(else) K
+( ) p
+(if) K
+( \(p1->birth.year > p2->birth.year\)) p n
 (    {) N
 (        ) S
 (return) K
@@ -1698,20 +1773,10 @@ x0 y0 moveto
 (    }) N
 (    ) S
 (else) K
-( ) p
-(if) K
-( \(p2->birth.year < p1->birth.year\)) p n
-(    {) N
+( {) p n
 (        ) S
 (return) K
 ( -1;) p n
-(    }) N
-(    ) S
-(else) K n
-(    {) p n
-(        ) S
-(return) K
-( 0;) p n
 (    }) N
 (}) N
 () N
@@ -1730,11 +1795,11 @@ x0 y0 moveto
 (    p1->name = strdup\(p2->name\);) N
 (    p1->firstname = strdup\(p2->firstname\);) N
 (}) S
-(person.c) (Page 1/1) (Dec 27, 21 0:06) title
+(person.c) (Page 1/1) (Dec 30, 21 14:46) title
 border
 grestore
 (Printed by ay) rhead
-(person.c) (8/13) (Monday December 27, 2021) footer
+(person.c) (8/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -1969,7 +2034,7 @@ x0 y0 moveto
 border
 grestore
 (Printed by ay) rhead
-(queue.c) (9/13) (Monday December 27, 2021) footer
+(queue.c) (9/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -2015,7 +2080,7 @@ x0 y0 moveto
 border
 grestore
 (Printed by ay) rhead
-(queue.c) (10/13) (Monday December 27, 2021) footer
+(queue.c) (10/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -2157,7 +2222,7 @@ x0 y0 moveto
 () N
 (    function_free_person\(rem\);) N
 (    List_free\(l\);) N
-(gtest_list.cpp) (Page 1/4) (Dec 27, 21 0:08) title
+(gtest_list.cpp) (Page 1/4) (Dec 30, 21 15:06) title
 border
 /v 1 store
 /x0 x v get 3.147420 add sx cw mul add store
@@ -2296,11 +2361,11 @@ x0 y0 moveto
 (    List_free\(l\);) N
 (}) N
 () N
-(gtest_list.cpp) (Page 2/4) (Dec 27, 21 0:08) title
+(gtest_list.cpp) (Page 2/4) (Dec 30, 21 15:06) title
 border
 grestore
 (Printed by ay) rhead
-(gtest_list.cpp) (11/13) (Monday December 27, 2021) footer
+(gtest_list.cpp) (11/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -2460,7 +2525,7 @@ x0 y0 moveto
 (        function_free_person\(rem\);) N
 (        function_free_person\(p\);) N
 (    }) N
-(gtest_list.cpp) (Page 3/4) (Dec 27, 21 0:08) title
+(gtest_list.cpp) (Page 3/4) (Dec 30, 21 15:06) title
 border
 /v 1 store
 /x0 x v get 3.147420 add sx cw mul add store
@@ -2484,11 +2549,11 @@ x0 y0 moveto
 (return) K
 ( RUN_ALL_TESTS\(\);) p n
 (}) N
-(gtest_list.cpp) (Page 4/4) (Dec 27, 21 0:08) title
+(gtest_list.cpp) (Page 4/4) (Dec 30, 21 15:06) title
 border
 grestore
 (Printed by ay) rhead
-(gtest_list.cpp) (12/13) (Monday December 27, 2021) footer
+(gtest_list.cpp) (12/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
@@ -2582,8 +2647,6 @@ x0 y0 moveto
 (    }) N
 () N
 (    ) S
-(// verifie qu'ils ont \303\251t\303\251 push) c n
-(    ) p
 (for) K
 ( \() p
 (int) k
@@ -2637,14 +2700,14 @@ x0 y0 moveto
 (    EXPECT_TRUE\(Queue_length\(f\) == 4\);) N
 () N
 (    function_free_person\(rem\);) N
-(gtest_queue.cpp) (Page 1/2) (Dec 27, 21 0:10) title
+(    Queue_free\(f\);) N
+(gtest_queue.cpp) (Page 1/2) (Dec 30, 21 15:02) title
 border
 /v 1 store
 /x0 x v get 3.147420 add sx cw mul add store
 /y0 y v get bfs th add sub store
 x0 y0 moveto
-(    Queue_free\(f\);) p n
-(}) N
+(}) p n
 () N
 (TEST\(QueueTest, drop\)) N
 ({) N
@@ -2760,11 +2823,11 @@ x0 y0 moveto
 (return) K
 ( RUN_ALL_TESTS\(\);) p n
 (}) N
-(gtest_queue.cpp) (Page 2/2) (Dec 27, 21 0:10) title
+(gtest_queue.cpp) (Page 2/2) (Dec 30, 21 15:02) title
 border
 grestore
 (Printed by ay) rhead
-(gtest_queue.cpp) (13/13) (Monday December 27, 2021) footer
+(gtest_queue.cpp) (13/13) (Thursday December 30, 2021) footer
 end % of iso1dict
 pagesave restore
 showpage
