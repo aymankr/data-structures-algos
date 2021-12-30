@@ -38,7 +38,6 @@ TEST(QueueTest, push)
         Enqueue(f, p);
     }
 
-    // verifie qu'ils ont été push
     for (int i = 0; i < 5; i++)
     {
         struct Person *rem = (struct Person *)Dequeue(f);

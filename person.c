@@ -31,17 +31,20 @@ struct Person *create_person(const char *name, const char *fname, int year, int 
 
 int compare_persons(const struct Person *p1, const struct Person *p2)
 {
-    if (p2->birth.year > p1->birth.year)
+    if (strcmp(p1->name, p2->name) == 0 &&
+        strcmp(p1->firstname, p2->firstname) == 0 &&
+        p1->birth.day == p2->birth.day &&
+        p1->birth.month == p2->birth.month &&
+        p1->birth.year == p2->birth.year)
+    {
+        return 0;
+    }
+    else if (p1->birth.year > p2->birth.year)
     {
         return 1;
     }
-    else if (p2->birth.year < p1->birth.year)
-    {
+    else {
         return -1;
-    }
-    else
-    {
-        return 0;
     }
 }
 

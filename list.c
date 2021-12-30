@@ -54,6 +54,22 @@ struct Addr *address_create(gpointer g)
 }
 
 /**
+ * @brief Get the last address of the list (not the head)
+ *
+ * @param l
+ * @return struct Addr*
+ */
+struct Addr *List_get_last(List_t *l)
+{
+    struct Addr *a = l->head;
+    while (a->next != NULL)
+    {
+        a = a->next;
+    }
+    return a;
+}
+
+/**
  * @brief Get position of an address in the ordered list, depending of the value
  * return the previous address of the value that will be inserted
  *
@@ -68,10 +84,13 @@ struct Addr *List_get_address_inferior(List_t *l, gpointer g)
         struct Addr *a = l->head;
         while (a != NULL)
         {
-            if (l->compare(a->value, g) > 0)
+            if (l->compare(g, a->value) > 0)
+            {
                 return a->prev;
+            }
             a = a->next;
         }
+        return List_get_last(l); // case where we insert an element before after the last
     }
     return NULL;
 }
@@ -155,7 +174,7 @@ void List_insert_after(List_t *l, gpointer g, struct Addr *previous)
     {
         l->queue = l->head = a;
     }
-    else
+    else if (previous->next != NULL)
     {
         a->next->prev = a;
     }
@@ -172,10 +191,10 @@ void List_insert_after(List_t *l, gpointer g, struct Addr *previous)
  */
 void List_insert(List_t *l, gpointer g)
 {
-    struct Addr *previous = List_get_address_inferior(l, g);
-    if (previous != NULL)
+    struct Addr *a = List_get_address_inferior(l, g);
+    if (a != NULL)
     {
-        List_insert_after(l, g, previous);
+        List_insert_after(l, g, a);
     }
     else
     {
@@ -227,7 +246,18 @@ gpointer List_remove_head(List_t *l)
 gpointer List_remove_after(List_t *l, struct Addr *previous)
 {
     struct Addr *a = previous->next; // address value to remove
-    a->prev->next = a->next;
+    if (a->prev != NULL)
+    {
+        a->prev->next = a->next;
+    }
+    if (a->next != NULL)
+    {
+        a->next->prev = a->prev;
+    }
+    else
+    {
+        l->queue = a->prev;
+    }
     gpointer removed = a->value;
     l->length--;
     free(a);
@@ -298,8 +328,10 @@ void List_free(List_t *l)
     struct Addr *a = l->head;
     while (a != NULL)
     {
-        l->free(a);
-        a = a->next;
+        l->free(a->value);
+        struct Addr *tmp = a->next;
+        free(a);
+        a = tmp;
     }
     free(l);
     l = NULL;

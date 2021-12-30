@@ -1,0 +1,2774 @@
+%!PS-Adobe-3.0
+%%Title: Makefile, list.h, person.h, queue.h, list.c, person.c, queue.c, gtest_list.cpp, gtest_queue.cpp
+%%For: ay
+%%Creator: a2ps version 4.14
+%%CreationDate: Mon Dec 27 00:26:01 2021
+%%BoundingBox: 24 24 588 768
+%%DocumentData: Clean7Bit
+%%Orientation: Landscape
+%%Pages: 13
+%%PageOrder: Ascend
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontType get 0 eq {
+    currentfont /FontMatrix get 3 get
+  }{
+    currentfont /FontMatrix get 3 get 1000 mul
+  } ifelse
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      % <vector> <key> <val>
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def % -
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Get the underline position and thickness if they're defined.
+    % Use 1 if they are not defined.
+    currentdict /FontInfo 2 copy known
+    { get
+      /UnderlinePosition 2 copy % <FontInfo> /UP <FontInfo> /UP
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+
+      /UnderlineThickness 2 copy % <FontInfo> /UT <FontInfo> /UT
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+      pop % -
+    }{ pop pop
+    } ifelse
+
+    currentdict
+  end 
+} bind def
+
+% composite fonts for ASCII-EUC mixed strings
+% Version 1.2 1/31/1990
+% Original Ken'ichi HANDA (handa@etl.go.jp)
+% Modified Norio Katayama (katayama@rd.nacsis.ac.jp),1998
+% Extend & Fix Koji Nakamaru (maru@on.cs.keio.ac.jp), 1999
+% Anyone can freely copy, modify, distribute this program.
+
+/copyfont {	% font-dic extra-entry-count  copyfont  font-dic
+	1 index maxlength add dict begin
+	{	1 index /FID ne 2 index /UniqueID ne and
+		{def} {pop pop} ifelse
+	} forall
+	currentdict
+	end
+} bind def
+
+/compositefont { % ASCIIFontName EUCFontName RomanScale RomanOffset Rot(T/F) compositefont font
+    /RomanRotation exch def
+    /RomanOffset exch def
+    /RomanScale exch def
+    userdict /fixeucfont_dict known not {
+	userdict begin
+	    /fixeucfont_dict 2 dict begin
+		/UpperByteEncoding [
+		    16#00 1 16#20 { pop 0 } for
+		    16#21 1 16#28 { 16#20 sub } for
+		    16#29 1 16#2F { pop 0 } for
+		    16#30 1 16#74 { 16#27 sub } for
+		    16#75 1 16#FF { pop 0 } for
+		] def
+	        /LowerByteEncoding [
+		    16#00 1 16#A0 { pop /.notdef } for
+		    16#A1 1 16#FE { 16#80 sub 16 2 string cvrs
+				    (cXX) dup 1 4 -1 roll
+				    putinterval cvn } for
+		    /.notdef
+		] def
+		currentdict
+	    end def
+	end
+    } if
+    findfont dup /FontType get 0 eq {
+	14 dict begin
+	    %
+	    % 7+8 bit EUC font
+	    %
+	    12 dict begin
+		/EUCFont exch def
+		/FontInfo (7+8 bit EUC font) readonly def
+		/PaintType 0 def
+		/FontType 0 def
+		/FontMatrix matrix def
+		% /FontName
+		/Encoding fixeucfont_dict /UpperByteEncoding get def
+		/FMapType 2 def
+		EUCFont /WMode known
+		{ EUCFont /WMode get /WMode exch def }
+		{ /WMode 0 def } ifelse
+		/FDepVector [
+		    EUCFont /FDepVector get 0 get
+		    [ 16#21 1 16#28 {} for 16#30 1 16#74 {} for ]
+		    {
+			13 dict begin
+			    /EUCFont EUCFont def
+			    /UpperByte exch 16#80 add def	
+			    % /FontName
+			    /FontInfo (EUC lower byte font) readonly def
+			    /PaintType 0 def
+			    /FontType 3 def
+			    /FontMatrix matrix def
+			    /FontBBox {0 0 0 0} def
+			    /Encoding
+				fixeucfont_dict /LowerByteEncoding get def
+			    % /UniqueID
+			    % /WMode
+			    /BuildChar {
+				gsave
+				exch dup /EUCFont get setfont
+				/UpperByte get
+				2 string
+				dup 0 4 -1 roll put
+				dup 1 4 -1 roll put
+				dup stringwidth setcharwidth
+				0 0 moveto show
+				grestore
+			    } bind def
+			    currentdict
+			end
+			/lowerbytefont exch definefont
+		    } forall
+		] def
+		currentdict
+	    end
+	    /eucfont exch definefont
+	    exch
+	    findfont 1 copyfont dup begin
+		RomanRotation {
+			/FontMatrix FontMatrix
+			[ 0 RomanScale neg RomanScale 0 RomanOffset neg 0 ]
+			matrix concatmatrix def
+		}{
+			/FontMatrix FontMatrix
+			[ RomanScale 0 0 RomanScale 0 RomanOffset ] matrix concatmatrix
+			def
+			/CDevProc
+			    {pop pop pop pop 0 exch -1000 exch 2 div 880} def
+		} ifelse
+	    end
+	    /asciifont exch definefont
+	    exch
+	    /FDepVector [ 4 2 roll ] def
+	    /FontType 0 def
+	    /WMode 0 def
+	    /FMapType 4 def
+	    /FontMatrix matrix def
+	    /Encoding [0 1] def
+	    /FontBBox {0 0 0 0} def
+%	    /FontHeight 1.0 def % XXXX
+	    /FontHeight RomanScale 1.0 ge { RomanScale }{ 1.0 } ifelse def
+	    /Descent -0.3 def   % XXXX
+	    currentdict
+	end
+	/tmpfont exch definefont
+	pop
+	/tmpfont findfont
+    }{
+	pop findfont 0 copyfont
+    } ifelse
+} def	
+
+/slantfont {	% FontName slant-degree  slantfont  font'
+    exch findfont 1 copyfont begin
+    [ 1 0 4 -1 roll 1 0 0 ] FontMatrix exch matrix concatmatrix
+    /FontMatrix exch def
+    currentdict
+    end
+} def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 612 def
+/sw 792 def
+/llx 24 def
+/urx 768 def
+/ury 588 def
+/lly 24 def
+/#copies 1 def
+/th 15.000000 def
+/fnfs 11 def
+/bfs 7.493857 def
+/cw 4.496314 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 81.400000 mul
+def
+/ph
+   522.321860 th add
+def
+/pmw urx llx sub pw 2 mul sub 1 div def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+  dup pmw add pw add
+] def
+/y [
+  pmh ph add 0 mul ph add
+  dup
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 0 def
+/tab 8 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1) 1
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(CFLAGS) l
+(= -std=c11 -Wall -Wextra -pedantic -g  -D_XOPEN_SOURCE=700 -fsanitize=add) p n
+(ress -fno-omit-frame-pointer) N
+(LDFLAGS) l
+( = -fsanitize=address -fno-omit-frame-pointer) p n
+() N
+(ALL) L
+(: googletest gtest_queue gtest_list) p n
+() N
+(# dependencies) c n
+(queue.o) L
+(: queue.c queue.h) p n
+(list.o) L
+(: list.c list.h) p n
+(person.o) L
+( : person.c person.h) p n
+() N
+(gtest_queue) L
+(: queue.o person.o gtest_queue.cpp) p n
+() S 8 T (g++ -pthread -std=c++11 -g -fsanitize=address -fno-omit-frame-pointer gt) N
+(est_queue.cpp queue.o person.o -o gtest_queue -I./googletest/googletest/include ) N
+(-L./googletest/build/lib -lgtest) N
+() N
+(gtest_list) L
+(: list.o person.o gtest_list.cpp) p n
+() S 8 T (g++ -pthread -std=c++11 -g -fsanitize=address -fno-omit-frame-pointer gt) N
+(est_list.cpp list.o person.o -o gtest_list -I./googletest/googletest/include -L.) N
+(/googletest/build/lib -lgtest) N
+() N
+(test_queue) L
+(: test_queue.o queue.o) p n
+() N
+(googletest) L
+(:) p n
+() S 8 T (\(git clone git://github.com/google/googletest.git ; cd googletest ; mkdi) N
+(r build ; cd build ; cmake .. ; make\)) N
+() N
+(clean) L
+(:) p n
+() S 8 T (rm -f *.o gtest_queue) N
+() N
+(gclean) L
+(: clean) p n
+() S 8 T (rm -rf ./googletest) N
+() N
+() N
+(#CFLAGS= -std=c11 -Wall -Wextra -pedantic -g  -D_XOPEN_SOURCE=700 -fsanitize=add) c n
+(ress -fno-omit-frame-pointer) N
+(#LDFLAGS = -fsanitize=address -fno-omit-frame-pointer) N
+(#main: main.o list.o) N
+(#main.o: list.h) N
+(#list.o: list.h) N
+() p n
+(#clean:) c n
+(#) S 8 T (rm -f *.o main) S
+(Makefile) (Page 1/1) (Dec 27, 21 0:22) title
+border
+grestore
+(Printed by ay) rhead
+(Makefile) (1/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 2
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#ifndef) K
+( List_H) p n
+(#define) K
+( List_H) p n
+(#include) K
+( ") p
+(stdbool.h) str
+(") p n
+() N
+(typedef) K
+( ) p
+(struct) k
+( List_s List_t;) p n
+() N
+(typedef) K
+( ) p
+(void) k
+( *gpointer;) p n
+(typedef) K
+( ) p
+(void) k
+( \(*function_display\)\(gpointer g\);) p n
+(typedef) K
+( ) p
+(void) k
+( \(*function_free\)\(gpointer g\);) p n
+(typedef) K
+( ) p
+(int) k
+( \(*function_compare\)\(gpointer g1, gpointer g2\);) p n
+(typedef) K
+( ) p
+(void) k
+( \(*function_modify\)\(gpointer g1, gpointer g2\);) p n
+(void) k
+( List_display\() p
+(const) K
+( List_t *l\);) p n
+(List_t *List_create\(function_display display, function_free free, function_compa) N
+(re compare,) N
+(                    function_modify modify\);) N
+(void) k
+( List_insert\(List_t *l, gpointer g\);) p n
+(gpointer List_remove\(List_t *l, gpointer g\);) N
+(unsigned) k
+( ) p
+(int) k
+( List_length\() p
+(const) K
+( List_t *l\);) p n
+(void) k
+( List_modify\(List_t *l, gpointer g, gpointer new_g\);) p n
+(bool List_empty\() S
+(const) K
+( List_t *l\);) p n
+(void) k
+( List_free\(List_t *l\);) p n
+() N
+(#endif) K n
+(list.h) (Page 1/1) (Dec 26, 21 23:01) title
+border
+grestore
+(Printed by ay) rhead
+(list.h) (2/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 3
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#ifndef) K
+( Person_H) p n
+(#define) K
+( Person_H) p n
+() N
+(struct) k
+( Date) p n
+({) N
+(    ) S
+(int) k
+( day, month, year;) p n
+(};) N
+() N
+(struct) k
+( Person) p n
+({) N
+(    ) S
+(char) k
+( *name, *firstname;) p n
+(    ) S
+(struct) k
+( Date birth;) p n
+(};) N
+() N
+(void) k
+( free_person\() p
+(struct) k
+( Person *p\);) p n
+(void) k
+( display_person\() p
+(const) K
+( ) p
+(struct) k
+( Person *p\);) p n
+(struct) k
+( Person *create_person\() p
+(const) K
+( ) p
+(char) k
+( *name, ) p
+(const) K
+( ) p
+(char) k
+( *fname, ) p
+(int) k
+( year, ) p
+(int) k
+( ) p n
+(month, ) S
+(int) k
+( day\);) p n
+(int) k
+( compare_persons\() p
+(const) K
+( ) p
+(struct) k
+( Person *p1, ) p
+(const) K
+( ) p
+(struct) k
+( Person *p2\);) p n
+(void) k
+( modify_person\() p
+(struct) k
+( Person *p1, ) p
+(struct) k
+( Person *p2\);) p n
+() N
+(#endif) K n
+(person.h) (Page 1/1) (Dec 27, 21 0:03) title
+border
+grestore
+(Printed by ay) rhead
+(person.h) (3/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 4
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#ifndef) K
+( QUEUE_H) p n
+(#define) K
+( QUEUE_H) p n
+(#include) K
+( ") p
+(stdbool.h) str
+(") p n
+() N
+(typedef) K
+( ) p
+(struct) k
+( Queue_s Queue_t;) p n
+() N
+(typedef) K
+( ) p
+(void) k
+(* gpointer;) p n
+(typedef) K
+( ) p
+(void) k
+( \( *function_display \) \( gpointer data \);) p n
+(typedef) K
+( ) p
+(void) k
+( \( *function_free \) \( gpointer data \);) p n
+(void) k
+( Queue_display\() p
+(const) K
+( Queue_t *l\);) p n
+(Queue_t *Queue_create\(function_display display, function_free free\);) N
+(void) k
+( Enqueue\(Queue_t *l, gpointer g\);) p n
+(gpointer Dequeue\(Queue_t *l\);) N
+(unsigned) k
+( ) p
+(int) k
+( Queue_length\() p
+(const) K
+( Queue_t *l\);) p n
+(bool Queue_empty\() S
+(const) K
+( Queue_t *l\);) p n
+(void) k
+( Queue_free\(Queue_t *l\);) p n
+() N
+(#endif) K n
+(queue.h) (Page 1/1) (Dec 26, 21 23:32) title
+border
+grestore
+(Printed by ay) rhead
+(queue.h) (4/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1-2) 5
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#include) K
+( <stdio.h>) p n
+(#include) K
+( <stdlib.h>) p n
+(#include) K
+( ") p
+(list.h) str
+(") p n
+() N
+(struct) k
+( Addr) p n
+({) N
+(    gpointer value;) N
+(    ) S
+(struct) k
+( Addr *prev, *next;) p n
+(};) N
+() N
+(struct) k
+( List_s) p n
+({) N
+(    ) S
+(struct) k
+( Addr *head, *queue;) p n
+(    ) S
+(unsigned) k
+( ) p
+(int) k
+( length;) p n
+(    function_display display;) N
+(    function_free free;) N
+(    function_compare compare;) N
+(    function_modify modify;) N
+(};) N
+() N
+(/**) c n
+( * @brief Construct a file) N
+( *) N
+( * @param display function display) N
+( * @param lree function free) N
+( * @param compare function compare) N
+( * @return List_t*) N
+( */) N
+(List_t *List_create\(function_display display, function_free free, function_compa) p n
+(re compare,) N
+(                    function_modify modify\)) N
+({) N
+(    List_t *l = malloc\() S
+(sizeof) K
+(\() p
+(struct) k
+( List_s\)\);) p n
+(    l->queue = l->head = ) S
+(NULL) K
+(;) p n
+(    l->length = 0;) N
+(    l->display = display;) N
+(    l->free = free;) N
+(    l->compare = compare;) N
+(    l->modify = modify;) N
+(    ) S
+(return) K
+( l;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Construct an address) N
+( *) N
+( * @param g value) N
+( * @return struct Addr*) N
+( */) N
+(struct) k
+( Addr *address_create\(gpointer g\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *address = malloc\() p
+(sizeof) K
+(\() p
+(struct) k
+( Addr\)\);) p n
+(    address->prev = address->next = ) S
+(NULL) K
+(;) p n
+(    address->value = g;) N
+(    ) S
+(return) K
+( address;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Get position of an address in the ordered list, depending of the value) N
+( * return the previous address of the value that will be inserted) N
+( *) N
+( * @param l list) N
+( * @param g value) N
+( * @return struct Addr*) N
+( */) N
+(struct) k
+( Addr *List_get_address_inferior\(List_t *l, gpointer g\)) p n
+({) N
+(    ) S
+(if) K
+( \(!List_empty\(l\)\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Addr *a = l->head;) p n
+(list.c) (Page 1/5) (Dec 27, 21 0:22) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        ) p
+(while) K
+( \(a != ) p
+(NULL) K
+(\)) p n
+(        {) N
+(            ) S
+(if) K
+( \(l->compare\(a->value, g\) > 0\)) p n
+(                ) S
+(return) K
+( a->prev;) p n
+(            a = a->next;) N
+(        }) N
+(    }) N
+(    ) S
+(return) K
+( ) p
+(NULL) K
+(;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Get the first address position of the same value) N
+( *) N
+( * @param l list) N
+( * @param g value) N
+( * @return struct Addr*) N
+( */) N
+(struct) k
+( Addr *List_get_addr_same\(List_t *l, gpointer g\)) p n
+({) N
+(    ) S
+(if) K
+( \(!List_empty\(l\)\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Addr *a = l->head;) p n
+(        ) S
+(while) K
+( \(a != ) p
+(NULL) K
+(\)) p n
+(        {) N
+(            ) S
+(if) K
+( \(l->compare\(a->value, g\) == 0\)) p n
+(                ) S
+(return) K
+( a;) p n
+(            a = a->next;) N
+(        }) N
+(    }) N
+(    ) S
+(return) K
+( ) p
+(NULL) K
+(;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Modify value of an address by a new value) N
+( *) N
+( * @param l list) N
+( * @param g current value) N
+( * @param new_value new value) N
+( */) N
+(void) k
+( List_modify\(List_t *l, gpointer g, gpointer new_value\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *a = List_get_addr_same\(l, g\);) p n
+(    l->modify\(a->value, new_value\);) N
+(}) N
+(/**) c n
+( * @brief Insert value in the head of the list) N
+( * if the list has at least 1 element, insert the address before the head) N
+( * else the address queue equals to the address value) N
+( *) N
+( * @param l list) N
+( * @param g value) N
+( */) N
+(void) k
+( List_insert_head\(List_t *l, gpointer g\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *a = address_create\(g\);) p n
+(    a->next = l->head;) N
+() N
+(    ) S
+(if) K
+( \(l->length++ > 0\)) p n
+(    {) N
+(        l->head->prev = a;) N
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        l->queue = a;) N
+(    }) N
+() N
+(    l->head = a;) N
+(}) N
+() N
+(list.c) (Page 2/5) (Dec 27, 21 0:22) title
+border
+grestore
+(Printed by ay) rhead
+(list.c) (5/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3-4) 6
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/**) c n
+( * @brief Insert value after the previous address) N
+( * if there is 1 element, insert in the head) N
+( * else set the previous of the next address being a) N
+( * set the next of the previous at a) N
+( *) N
+( * @param l list) N
+( * @param g value) N
+( * @param previous previous address) N
+( */) N
+(void) k
+( List_insert_after\(List_t *l, gpointer g, ) p
+(struct) k
+( Addr *previous\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *a = address_create\(g\);) p n
+(    a->next = previous->next;) N
+(    a->prev = previous;) N
+() N
+(    ) S
+(if) K
+( \(l->length++ == 1\)) p n
+(    {) N
+(        l->queue = l->head = a;) N
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        a->next->prev = a;) N
+(    }) N
+() N
+(    previous->next = a;) N
+(}) N
+() N
+(/**) c n
+( * @brief Insert value) N
+( * in the good position if the address exists, else insert in the head) N
+( *) N
+( * @param l list) N
+( * @param g value) N
+( */) N
+(void) k
+( List_insert\(List_t *l, gpointer g\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *previous = List_get_address_inferior\(l, g\);) p n
+(    ) S
+(if) K
+( \(previous != ) p
+(NULL) K
+(\)) p n
+(    {) N
+(        List_insert_after\(l, g, previous\);) N
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        List_insert_head\(l, g\);) N
+(    }) N
+(    printf\(") S
+(\\n--- INSERT ---\\n) str
+("\);) p n
+(    List_display\(l\);) N
+(}) N
+() N
+(/**) c n
+( * @brief Display values of a list) N
+( *) N
+( * @param l list) N
+( */) N
+(void) k
+( List_display\() p
+(const) K
+( List_t *l\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *a = l->head;) p n
+(    ) S
+(while) K
+( \(a != ) p
+(NULL) K
+(\)) p n
+(    {) N
+(        l->display\(a->value\);) N
+(        a = a->next;) N
+(    }) N
+(    printf\(") S
+(--------------\\n) str
+("\);) p n
+(}) N
+() N
+(/**) c n
+( * @brief Remove the head of the list) N
+( *) N
+(list.c) (Page 3/5) (Dec 27, 21 0:22) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+( * @param l list) c n
+( * @return gpointer) N
+( */) N
+(gpointer List_remove_head\(List_t *l\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *a = l->head;) p n
+(    l->head = a->next;) N
+(    gpointer removed = a->value;) N
+(    free\(a\);) N
+(    l->length--;) N
+(    ) S
+(return) K
+( removed;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Remove an address positionned after the "previous") N
+( *) N
+( * @param l list) N
+( * @param previous previous address) N
+( * @return gpointer) N
+( */) N
+(gpointer List_remove_after\(List_t *l, ) p
+(struct) k
+( Addr *previous\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *a = previous->next; ) p
+(// address value to remove) c n
+(    a->prev->next = a->next;) p n
+(    gpointer removed = a->value;) N
+(    l->length--;) N
+(    free\(a\);) N
+(    ) S
+(return) K
+( removed;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Remove a value in the list) N
+( * Get the address from the value) N
+( * if this value doesn't correspond to the head remove address positionned after) N
+( his previous) N
+( * else remove the head) N
+( *) N
+( * @param l) N
+( * @param g) N
+( * @return gpointer) N
+( */) N
+(gpointer List_remove\(List_t *l, gpointer g\)) p n
+({) N
+(    gpointer removed = ) S
+(NULL) K
+(;) p n
+(    ) S
+(struct) k
+( Addr *a = List_get_addr_same\(l, g\);) p n
+() N
+(    ) S
+(if) K
+( \(a != ) p
+(NULL) K
+(\)) p n
+(    {) N
+(        ) S
+(if) K
+( \(a != l->head\)) p n
+(        {) N
+(            removed = List_remove_after\(l, a->prev\);) N
+(        }) N
+(        ) S
+(else) K n
+(        {) p n
+(            removed = List_remove_head\(l\);) N
+(        }) N
+(    }) N
+(    printf\(") S
+(\\n--- REMOVE ---\\n) str
+("\);) p n
+(    List_display\(l\);) N
+(    ) S
+(return) K
+( removed;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Get the length of the list) N
+( *) N
+( * @param l list) N
+( * @return unsigned int) N
+( */) N
+(unsigned) k
+( ) p
+(int) k
+( List_length\() p
+(const) K
+( List_t *l\)) p n
+(list.c) (Page 4/5) (Dec 27, 21 0:22) title
+border
+grestore
+(Printed by ay) rhead
+(list.c) (6/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5) 7
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+({) p n
+(    ) S
+(return) K
+( l->length;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Verify if the list is empty) N
+( *) N
+( * @param l list) N
+( * @return true) N
+( * @return false) N
+( */) N
+(bool List_empty\() p
+(const) K
+( List_t *l\)) p n
+({) N
+(    ) S
+(return) K
+( List_length\(l\) == 0;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Memory free of all the addresss of a list, and free the list) N
+( *) N
+( * @param l list) N
+( */) N
+(void) k
+( List_free\(List_t *l\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr *a = l->head;) p n
+(    ) S
+(while) K
+( \(a != ) p
+(NULL) K
+(\)) p n
+(    {) N
+(        l->free\(a\);) N
+(        a = a->next;) N
+(    }) N
+(    free\(l\);) N
+(    l = ) S
+(NULL) K
+(;) p n
+(}) S
+(list.c) (Page 5/5) (Dec 27, 21 0:22) title
+border
+grestore
+(Printed by ay) rhead
+(list.c) (7/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 8
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#include) K
+( <stdio.h>) p n
+(#include) K
+( <stdlib.h>) p n
+(#include) K
+( <string.h>) p n
+(#include) K
+( ") p
+(person.h) str
+(") p n
+() N
+(void) k
+( free_person\() p
+(struct) k
+( Person *p\)) p n
+({) N
+(    free\(p->name\);) N
+(    free\(p->firstname\);) N
+(    p->name = p->firstname = ) S
+(NULL) K
+(;) p n
+(    free\(p\);) N
+(    p = ) S
+(NULL) K
+(;) p n
+(}) N
+() N
+(void) k
+( display_person\() p
+(const) K
+( ) p
+(struct) k
+( Person *p\)) p n
+({) N
+(    printf\(") S
+(%s %s %d %d %d\\n) str
+(", p->name, p->firstname, p->birth.year, p->birth.mont) p n
+(h,) N
+(           p->birth.day\);) N
+(}) N
+() N
+(struct) k
+( Person *create_person\() p
+(const) K
+( ) p
+(char) k
+( *name, ) p
+(const) K
+( ) p
+(char) k
+( *fname, ) p
+(int) k
+( year, ) p
+(int) k
+( ) p n
+(month, ) S
+(int) k
+( day\)) p n
+({) N
+(    ) S
+(struct) k
+( Person *p = \() p
+(struct) k
+( Person *\)malloc\() p
+(sizeof) K
+(\() p
+(struct) k
+( Person\)\);) p n
+(    p->birth.year = year;) N
+(    p->birth.day = day;) N
+(    p->birth.month = month;) N
+(    p->name = strdup\(name\);) N
+(    p->firstname = strdup\(fname\);) N
+(    ) S
+(return) K
+( p;) p n
+(}) N
+() N
+(int) k
+( compare_persons\() p
+(const) K
+( ) p
+(struct) k
+( Person *p1, ) p
+(const) K
+( ) p
+(struct) k
+( Person *p2\)) p n
+({) N
+(    ) S
+(if) K
+( \(p2->birth.year > p1->birth.year\)) p n
+(    {) N
+(        ) S
+(return) K
+( 1;) p n
+(    }) N
+(    ) S
+(else) K
+( ) p
+(if) K
+( \(p2->birth.year < p1->birth.year\)) p n
+(    {) N
+(        ) S
+(return) K
+( -1;) p n
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        ) S
+(return) K
+( 0;) p n
+(    }) N
+(}) N
+() N
+(void) k
+( modify_person\() p
+(struct) k
+( Person *p1, ) p
+(struct) k
+( Person *p2\)) p n
+({) N
+(    p1->birth.year = p2->birth.year;) N
+(    p1->birth.day = p2->birth.day;) N
+(    p1->birth.month = p2->birth.month;) N
+(    free\(p1->name\);) N
+(    free\(p1->firstname\);) N
+(    p1->name = strdup\(p2->name\);) N
+(    p1->firstname = strdup\(p2->firstname\);) N
+(}) S
+(person.c) (Page 1/1) (Dec 27, 21 0:06) title
+border
+grestore
+(Printed by ay) rhead
+(person.c) (8/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1-2) 9
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#include) K
+( <stdio.h>) p n
+(#include) K
+( <stdlib.h>) p n
+(#include) K
+( ") p
+(queue.h) str
+(") p n
+() N
+(struct) k
+( Addr_s) p n
+({) N
+(    gpointer value;) N
+(    ) S
+(struct) k
+( Addr_s *prev, *next;) p n
+(};) N
+() N
+(struct) k
+( Queue_s) p n
+({) N
+(    ) S
+(struct) k
+( Addr_s *head, *queue;) p n
+(    ) S
+(unsigned) k
+( ) p
+(int) k
+( length;) p n
+(    function_display display;) N
+(    function_free free;) N
+(};) N
+() N
+(/**) c n
+( * @brief Construct a queue) N
+( *) N
+( * @param display function display) N
+( * @param free function free) N
+( * @return Queue_t*) N
+( */) N
+(Queue_t *Queue_create\(function_display display, function_free free\)) p n
+({) N
+(    Queue_t *f = malloc\() S
+(sizeof) K
+(\() p
+(struct) k
+( Queue_s\)\);) p n
+(    f->queue = f->head = ) S
+(NULL) K
+(;) p n
+(    f->length = 0;) N
+(    f->display = display;) N
+(    f->free = free;) N
+(    ) S
+(return) K
+( f;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Construct an address) N
+( *) N
+( * @param g value) N
+( * @return struct Addr_s*) N
+( */) N
+(struct) k
+( Addr_s *address_create\(gpointer g\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr_s *address = malloc\() p
+(sizeof) K
+(\() p
+(struct) k
+( Addr_s\)\);) p n
+(    address->prev = address->next = ) S
+(NULL) K
+(;) p n
+(    address->value = g;) N
+(    ) S
+(return) K
+( address;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Insert an address in the queue) N
+( * if the queue is not empty, insert before the head) N
+( * else insert the first element in the head) N
+( *) N
+( * @param f queue) N
+( * @param g value) N
+( */) N
+(void) k
+( Enqueue\(Queue_t *f, gpointer g\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr_s *c = address_create\(g\);) p n
+(    c->next = f->head;) N
+() N
+(    ) S
+(if) K
+( \(Queue_length\(f\) > 0\)) p n
+(    {) N
+(        f->head->prev = c;) N
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        f->queue = c;) N
+(queue.c) (Page 1/3) (Dec 26, 21 23:50) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    }) p n
+(    f->head = c;) N
+(    f->length++;) N
+(    Queue_display\(f\);) N
+(}) N
+() N
+(/**) c n
+( * @brief Display values of a queue) N
+( *) N
+( * @param f queue) N
+( */) N
+(void) k
+( Queue_display\() p
+(const) K
+( Queue_t *f\)) p n
+({) N
+(    ) S
+(struct) k
+( Addr_s *c = f->head;) p n
+(    ) S
+(while) K
+( \(c != ) p
+(NULL) K
+(\)) p n
+(    {) N
+(        f->display\(c->value\);) N
+(        c = c->next;) N
+(    }) N
+(    printf\(") S
+(NULL\\n) str
+("\);) p n
+(}) N
+() N
+(/**) c n
+( * @brief Remove the head address of the queue if there is at least 1 element) N
+( * if there is only 1 address, set the head and the queue at NULL) N
+( * else remove the head by replacing the address queue by the previous address q) N
+(ueue) N
+( *) N
+( * @param f queue) N
+( * @return gpointer) N
+( */) N
+(gpointer Dequeue\(Queue_t *f\)) p n
+({) N
+(    gpointer g = f->queue->value;) N
+(    ) S
+(struct) k
+( Addr_s *tmp = f->queue;) p n
+() N
+(    ) S
+(if) K
+( \(Queue_length\(f\) == 1\)) p n
+(    {) N
+(        f->head = f->queue = ) S
+(NULL) K
+(;) p n
+(    }) N
+(    ) S
+(else) K n
+(    {) p n
+(        f->queue = tmp->prev;) N
+(    }) N
+(    free\(tmp\);) N
+(    tmp = ) S
+(NULL) K
+(;) p n
+(    f->length--;) N
+(    ) S
+(return) K
+( g;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Get length of a queue) N
+( *) N
+( * @param f queue) N
+( * @return unsigned int) N
+( */) N
+(unsigned) k
+( ) p
+(int) k
+( Queue_length\() p
+(const) K
+( Queue_t *f\)) p n
+({) N
+(    ) S
+(return) K
+( f->length;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Verify if a queue is empty) N
+( *) N
+( * @param f queue) N
+( * @return true) N
+( * @return false) N
+( */) N
+(bool Queue_empty\() p
+(const) K
+( Queue_t *f\)) p n
+(queue.c) (Page 2/3) (Dec 26, 21 23:50) title
+border
+grestore
+(Printed by ay) rhead
+(queue.c) (9/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 10
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+({) p n
+(    ) S
+(return) K
+( f->length == 0;) p n
+(}) N
+() N
+(/**) c n
+( * @brief Free pointer values of the queue, free the queue) N
+( *) N
+( * @param f queue) N
+( */) N
+(void) k
+( Queue_free\(Queue_t *f\)) p n
+({) N
+(    ) S
+(while) K
+( \(!Queue_empty\(f\)\)) p n
+(    {) N
+(        gpointer g = Dequeue\(f\);) N
+(        f->free\(g\);) N
+(    }) N
+(    free\(f\);) N
+(    f = ) S
+(NULL) K
+(;) p n
+(}) S
+(queue.c) (Page 3/3) (Dec 26, 21 23:50) title
+border
+grestore
+(Printed by ay) rhead
+(queue.c) (10/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1-2) 11
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#include) K
+( <assert.h>) p n
+(#include) K
+( <stdbool.h>) p n
+(#include) K
+( <stdio.h>) p n
+(#include) K
+( <stdlib.h>) p n
+(#include) K
+( <string.h>) p n
+() N
+(#include) K
+( ") p
+(gtest/gtest.h) str
+(") p n
+() N
+(extern) K
+( ") p
+(C) str
+(") p n
+({) N
+(#include) K
+( ") p
+(list.h) str
+(") p n
+(#include) K
+( ") p
+(person.h) str
+(") p n
+(}) N
+() N
+(void) k
+( function_free_person\(gpointer g\)) p n
+({) N
+(    free_person\(\() S
+(struct) k
+( Person *\)g\);) p n
+(}) N
+() N
+(void) k
+( function_display_person\(gpointer g\)) p n
+({) N
+(    display_person\(\() S
+(const) K
+( ) p
+(struct) k
+( Person *\)g\);) p n
+(}) N
+() N
+(/**) c n
+( * @brief Compare two "Person"'s birth year) N
+( *) N
+( * @param g1 Person 1) N
+( * @param g2 Person 2) N
+( * @return int) N
+( */) N
+(int) k
+( function_compare_person\(gpointer g1, gpointer g2\)) p n
+({) N
+(    ) S
+(return) K
+( compare_persons\(\() p
+(const) K
+( ) p
+(struct) k
+( Person *\)g1, \() p
+(const) K
+( ) p
+(struct) k
+( Person *\)g2\)) p n
+(;) N
+(}) N
+() N
+(void) k
+( function_modify_person\(gpointer g1, gpointer g2\)) p n
+({) N
+(    modify_person\(\() S
+(struct) k
+( Person *\)g1, \() p
+(struct) k
+( Person *\)g2\);) p n
+(}) N
+() N
+(TEST\(ListTest, init_free\)) N
+({) N
+(    List_s *l = List_create\(function_display_person, function_free_person, funct) N
+(ion_compare_person,) N
+(                            function_modify_person\);) N
+(    EXPECT_TRUE\(l != ) S
+(NULL) K
+(\);) p n
+(    List_free\(l\);) N
+(}) N
+() N
+(TEST\(ListTest, push\)) N
+({) N
+(    List_s *l = List_create\(function_display_person, function_free_person, funct) N
+(ion_compare_person,) N
+(                            function_modify_person\);) N
+() N
+(    ) S
+(// push) c n
+(    ) p
+(struct) k
+( Person *p = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000, 1, 10\);) p n
+(    List_insert\(l, p\);) N
+(    EXPECT_TRUE\(!List_empty\(l\)\);) N
+() N
+(    ) S
+(// verify if the element was pushed) c n
+(    ) p
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)List_remove\(l, p\);) p n
+(    EXPECT_TRUE\(p != ) S
+(NULL) K
+(\);) p n
+(    EXPECT_TRUE\(List_empty\(l\)\);) N
+() N
+(    function_free_person\(rem\);) N
+(    List_free\(l\);) N
+(gtest_list.cpp) (Page 1/4) (Dec 27, 21 0:08) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(}) p n
+() N
+(TEST\(ListTest, pop\)) N
+({) N
+(    List_s *l = List_create\(function_display_person, function_free_person, funct) N
+(ion_compare_person,) N
+(                            function_modify_person\);) N
+() N
+(    ) S
+(// push) c n
+(    ) p
+(struct) k
+( Person *p = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000, 1, 10\);) p n
+(    List_insert\(l, p\);) N
+() N
+(    ) S
+(// not empty) c n
+(    EXPECT_TRUE\(List_length\(l\) == 1\);) p n
+() N
+(    ) S
+(// pop an unknown element) c n
+(    ) p
+(struct) k
+( Person *p2 = create_person\(") p
+(namae) str
+(", ") p
+(fzzzzz) str
+(", 2200, 3, 11\);) p n
+(    ) S
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)List_remove\(l, p2\);) p n
+(    EXPECT_TRUE\(rem == ) S
+(NULL) K
+(\);) p n
+() N
+(    ) S
+(// pop an existing element) c n
+(    ) p
+(struct) k
+( Person *rem2 = \() p
+(struct) k
+( Person *\)List_remove\(l, p\);) p n
+(    EXPECT_TRUE\(rem2 != ) S
+(NULL) K
+(\);) p n
+() N
+(    ) S
+(// empty) c n
+(    EXPECT_TRUE\(List_empty\(l\)\);) p n
+() N
+(    function_free_person\(p2\);) N
+(    function_free_person\(rem2\);) N
+() N
+(    List_free\(l\);) N
+(}) N
+() N
+(TEST\(ListTest, drop\)) N
+({) N
+(    List_s *l = List_create\(function_display_person, function_free_person, funct) N
+(ion_compare_person,) N
+(                            function_modify_person\);) N
+() N
+(    ) S
+(// push) c n
+(    ) p
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p1 = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        List_insert\(l, p1\);) N
+(    }) N
+(    EXPECT_TRUE\(!List_empty\(l\)\);) N
+() N
+(    ) S
+(struct) k
+( Person *other = create_person\(") p
+(insert) str
+(", ") p
+(order) str
+(", 2002, 1, 1\);) p n
+(    List_insert\(l, other\);) N
+() N
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p2 = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        ) S
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)List_remove\(l, p2\);) p n
+(        EXPECT_TRUE\(rem->birth.year == 2000 + i\);) N
+(        EXPECT_TRUE\(rem->birth.month == i\);) N
+(        EXPECT_TRUE\(rem->birth.day == i\);) N
+(        function_free_person\(p2\);) N
+(        function_free_person\(rem\);) N
+(    }) N
+() N
+(    EXPECT_TRUE\(!List_empty\(l\)\);) N
+(    ) S
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)List_remove\(l, other\);) p n
+(    function_free_person\(rem\);) N
+(    EXPECT_TRUE\(List_empty\(l\)\);) N
+() N
+(    List_free\(l\);) N
+(}) N
+() N
+(gtest_list.cpp) (Page 2/4) (Dec 27, 21 0:08) title
+border
+grestore
+(Printed by ay) rhead
+(gtest_list.cpp) (11/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3-4) 12
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(TEST\(ListTest, modify\)) p n
+({) N
+(    List_s *l = List_create\(function_display_person, function_free_person, funct) N
+(ion_compare_person,) N
+(                            function_modify_person\);) N
+() N
+(    ) S
+(// create a Person) c n
+(    ) p
+(struct) k
+( Person *p1 = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000, 1, 1\);) p n
+(    List_insert\(l, p1\);) N
+() N
+(    ) S
+(// modify p1 by p2) c n
+(    ) p
+(struct) k
+( Person *p2 = create_person\(") p
+(new) str
+(", ") p
+(n) str
+(", 2015, 3, 4\);) p n
+(    List_modify\(l, p1, p2\);) N
+() N
+(    ) S
+(// remove p1 and verify if p1 has attributes of p2) c n
+(    ) p
+(struct) k
+( Person *newp1 = \() p
+(struct) k
+( Person *\)List_remove\(l, p1\);) p n
+(    ASSERT_STREQ\(newp1->name, ") S
+(new) str
+("\);) p n
+(    EXPECT_TRUE\(newp1->birth.year == 2015\);) N
+() N
+(    function_free_person\(newp1\);) N
+(    function_free_person\(p2\);) N
+(    List_free\(l\);) N
+(}) N
+() N
+(TEST\(ListTest, empty\)) N
+({) N
+(    List_s *l = List_create\(function_display_person, function_free_person, funct) N
+(ion_compare_person,) N
+(                            function_modify_person\);) N
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p1 = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        List_insert\(l, p1\);) N
+(    }) N
+(    EXPECT_TRUE\(!List_empty\(l\)\); ) S
+(// not empty) c n
+(    ) p
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p2 = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        ) S
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)List_remove\(l, p2\);) p n
+(        function_free_person\(rem\);) N
+(        function_free_person\(p2\);) N
+(    }) N
+() N
+(    EXPECT_TRUE\(List_empty\(l\)\); ) S
+(// empty) c n
+(    List_free\(l\);) p n
+(}) N
+() N
+(TEST\(ListTest, length\)) N
+({) N
+(    List_s *l = List_create\(function_display_person, function_free_person, funct) N
+(ion_compare_person,) N
+(                            function_modify_person\);) N
+(    EXPECT_TRUE\(List_length\(l\) == 0\); ) S
+(// empty) c n
+() p n
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\) ) p
+(// push 5 times) c n
+(    {) p n
+(        ) S
+(struct) k
+( Person *p = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        List_insert\(l, p\);) N
+(    }) N
+(    EXPECT_TRUE\(List_length\(l\) == 5\); ) S
+(// length of 5) c n
+() p n
+(    ) S
+(// pop 5 times) c n
+(    ) p
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        ) S
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)List_remove\(l, p\);) p n
+(        function_free_person\(rem\);) N
+(        function_free_person\(p\);) N
+(    }) N
+(gtest_list.cpp) (Page 3/4) (Dec 27, 21 0:08) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(    EXPECT_TRUE\(List_length\(l\) == 0\); ) S
+(// empty) c n
+(    List_free\(l\);) p n
+(}) N
+() N
+(int) k
+( main\() p
+(int) k
+( argc, ) p
+(char) k
+( **argg\)) p n
+({) N
+(    ::testing::InitGoogleTest\(&argc, argg\);) N
+(    ) S
+(return) K
+( RUN_ALL_TESTS\(\);) p n
+(}) N
+(gtest_list.cpp) (Page 4/4) (Dec 27, 21 0:08) title
+border
+grestore
+(Printed by ay) rhead
+(gtest_list.cpp) (12/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1-2) 13
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#include) K
+( <assert.h>) p n
+(#include) K
+( <stdbool.h>) p n
+(#include) K
+( <stdio.h>) p n
+(#include) K
+( <stdlib.h>) p n
+(#include) K
+( <string.h>) p n
+() N
+(#include) K
+( ") p
+(gtest/gtest.h) str
+(") p n
+() N
+(extern) K
+( ") p
+(C) str
+(") p n
+({) N
+(#include) K
+( ") p
+(queue.h) str
+(") p n
+(#include) K
+( ") p
+(person.h) str
+(") p n
+(}) N
+() N
+(void) k
+( function_free_person\(gpointer v\)) p n
+({) N
+(    free_person\(\() S
+(struct) k
+( Person *\)v\);) p n
+(}) N
+() N
+(void) k
+( function_display_person\(gpointer v\)) p n
+({) N
+(    display_person\(\() S
+(const) K
+( ) p
+(struct) k
+( Person *\)v\);) p n
+(}) N
+() N
+(TEST\(QueueTest, init_free\)) N
+({) N
+(    Queue_s *f = Queue_create\(function_display_person, function_free_person\);) N
+(    EXPECT_FALSE\(f == ) S
+(NULL) K
+(\);) p n
+(    Queue_free\(f\);) N
+(}) N
+() N
+(TEST\(QueueTest, push\)) N
+({) N
+(    Queue_s *f = Queue_create\(function_display_person, function_free_person\);) N
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        Enqueue\(f, p\);) N
+(    }) N
+() N
+(    ) S
+(// verifie qu'ils ont \303\251t\303\251 push) c n
+(    ) p
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)Dequeue\(f\);) p n
+(        ASSERT_STREQ\(rem->name, ") S
+(name) str
+("\);) p n
+(        ASSERT_STREQ\(rem->firstname, ") S
+(fname) str
+("\);) p n
+(        EXPECT_TRUE\(rem->birth.year == 2000 + i\);) N
+(        EXPECT_TRUE\(rem->birth.month == i\);) N
+(        EXPECT_TRUE\(rem->birth.day == i\);) N
+(        function_free_person\(rem\);) N
+(    }) N
+() N
+(    Queue_free\(f\);) N
+(}) N
+() N
+(TEST\(QueueTest, pop\)) N
+({) N
+(    Queue_s *f = Queue_create\(function_display_person, function_free_person\);) N
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        Enqueue\(f, p\);) N
+(    }) N
+() N
+(    EXPECT_TRUE\(Queue_length\(f\) == 5\);) N
+(    ) S
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)Dequeue\(f\);) p n
+(    EXPECT_TRUE\(Queue_length\(f\) == 4\);) N
+() N
+(    function_free_person\(rem\);) N
+(gtest_queue.cpp) (Page 1/2) (Dec 27, 21 0:10) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    Queue_free\(f\);) p n
+(}) N
+() N
+(TEST\(QueueTest, drop\)) N
+({) N
+(    Queue_s *f = Queue_create\(function_display_person, function_free_person\);) N
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        Enqueue\(f, p\);) N
+(    }) N
+(    EXPECT_TRUE\(!Queue_empty\(f\)\);) N
+() N
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)Dequeue\(f\);) p n
+(        function_free_person\(rem\);) N
+(    }) N
+() N
+(    EXPECT_TRUE\(Queue_empty\(f\)\);) N
+(    Queue_free\(f\);) N
+(}) N
+() N
+(TEST\(QueueTest, empty\)) N
+({) N
+(    Queue_s *f = Queue_create\(function_display_person, function_free_person\);) N
+(    EXPECT_TRUE\(Queue_empty\(f\)\);) N
+() N
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        Enqueue\(f, p\);) N
+(    }) N
+(    EXPECT_TRUE\(!Queue_empty\(f\)\);) N
+() N
+(    Queue_free\(f\);) N
+(}) N
+() N
+(TEST\(QueueTest, length\)) N
+({) N
+(    Queue_s *f = Queue_create\(function_display_person, function_free_person\);) N
+(    EXPECT_TRUE\(Queue_length\(f\) == 0\);) N
+() N
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *p = create_person\(") p
+(name) str
+(", ") p
+(fname) str
+(", 2000 + i, i, i\);) p n
+(        Enqueue\(f, p\);) N
+(    }) N
+(    EXPECT_TRUE\(Queue_length\(f\) == 5\);) N
+() N
+(    ) S
+(for) K
+( \() p
+(int) k
+( i = 0; i < 5; i++\)) p n
+(    {) N
+(        ) S
+(struct) k
+( Person *rem = \() p
+(struct) k
+( Person *\)Dequeue\(f\);) p n
+(        function_free_person\(rem\);) N
+(    }) N
+(    EXPECT_TRUE\(Queue_length\(f\) == 0\);) N
+(    Queue_free\(f\);) N
+(}) N
+() N
+(int) k
+( main\() p
+(int) k
+( argc, ) p
+(char) k
+( **argv\)) p n
+({) N
+(    ::testing::InitGoogleTest\(&argc, argv\);) N
+(    ) S
+(return) K
+( RUN_ALL_TESTS\(\);) p n
+(}) N
+(gtest_queue.cpp) (Page 2/2) (Dec 27, 21 0:10) title
+border
+grestore
+(Printed by ay) rhead
+(gtest_queue.cpp) (13/13) (Monday December 27, 2021) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF
